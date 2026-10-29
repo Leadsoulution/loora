@@ -135,29 +135,6 @@ with_orders_lock(function () use ($line) {
     }
 });
 
-// 2. Envoi optionnel vers un webhook (Google Sheets via Apps Script, Zapier, Make…)
-if (ORDER_WEBHOOK_URL !== '') {
-    $payload = encode_order($order);
-    if (function_exists('curl_init')) {
-        $ch = curl_init(ORDER_WEBHOOK_URL);
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_TIMEOUT => 8,
-        ]);
-        curl_exec($ch);
-        curl_close($ch);
-    } else {
-        @file_get_contents(ORDER_WEBHOOK_URL, false, stream_context_create(['http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: application/json\r\n",
-            'content' => $payload,
-            'timeout' => 8,
-        ]]));
-    }
-}
-
-json_out(['ref' => $ref, 'total' => $order['total']]);
+// 2. Réponse immédiate au client, puis on prévient les applications reliées (dops, webhook)
+respond_early(['ref' => $ref, 'total' => $order['total']]);
+notify_integrations($order);
