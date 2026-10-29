@@ -1,0 +1,35 @@
+# Site LOORA sur hébergement web (Apache / LiteSpeed) : pages HTML + API PHP.
+Options -Indexes -MultiViews
+DirectoryIndex index.html index.php
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Fichiers internes de l'API et dossier de secours des données : jamais accessibles
+  RewriteRule ^api/(_lib|config)\.php$ - [F,L]
+  RewriteRule ^_data(/|$) - [F,L]
+
+  # Pas de page d'accueil : on va directement au premier produit
+  RewriteRule ^$ produit/bague-aube/ [R=302,L]
+
+  # Fiches produit : la page HTML avec le contenu enregistré déjà inclus
+  RewriteRule ^produit/([a-z0-9-]+)/?$ api/page.php?slug=$1 [L,QSA]
+
+  # Images envoyées depuis le dashboard (stockées hors du site)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^uploads/([A-Za-z0-9_.-]+)$ api/file.php?f=$1 [L,QSA]
+
+  # API sans extension : /api/orders -> /api/orders.php
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME}.php -f
+  RewriteRule ^(api/.+)$ $1.php [L,QSA]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Fichiers JS/CSS de Next.js : noms uniques, cache long
+  <FilesMatch "\.(js|css|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>

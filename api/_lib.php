@@ -1,0 +1,222 @@
+<?php
+// Fonctions partagées par l'API PHP du site (hébergement web Hostinger).
+// Équivalent en ligne des routes src/app/**/route.dev.ts utilisées en local.
+
+if (!defined('LOORA')) {
+    http_response_code(404);
+    exit;
+}
+
+require __DIR__ . '/config.php';
+
+/** Les 3 produits du site (voir src/lib/products.ts) */
+const LOORA_PRODUCTS = ['bague-aube', 'collier-lune-dor', 'boucles-goutte'];
+
+const METAL_LABEL = [
+    'or' => 'Or jaune 18 carats',
+    'argent' => 'Argent massif 925',
+    'rose' => 'Or rose 18 carats',
+];
+
+const ORDER_STATUSES = [
+    'a_confirmer' => 'À confirmer',
+    'confirmee' => 'Confirmée',
+    'expediee' => 'Expédiée',
+    'livree' => 'Livrée',
+    'annulee' => 'Annulée',
+    'retour' => 'Retour',
+];
+
+/* ------------------------------------------------------------ Réponses */
+
+function json_out($data, $status = 200)
+{
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+/** Réponse JSON déjà encodée (contenu enregistré, renvoyé tel quel) */
+function raw_json_out($json, $status = 200)
+{
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo $json;
+    exit;
+}
+
+function method()
+{
+    return strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+}
+
+function only_methods(array $allowed)
+{
+    if (!in_array(method(), $allowed, true)) {
+        header('Allow: ' . implode(', ', $allowed));
+        json_out(['error' => 'Méthode non autorisée.'], 405);
+    }
+}
+
+/** Corps JSON de la requête (tableau associatif), ou null s'il est invalide */
+function read_json_body()
+{
+    $data = json_decode((string) file_get_contents('php://input'), true);
+    return is_array($data) ? $data : null;
+}
+
+function str_val($value, $max = 200)
+{
+    return is_scalar($value) ? mb_substr(trim((string) $value), 0, $max) : '';
+}
+
+/* ------------------------------------------------------------ Données */
+
+/**
+ * Dossier des données (contenu, images envoyées, commandes).
+ * De préférence à côté du site (hors public_html) pour ne jamais être touché par un déploiement,
+ * sinon dans le site, protégé par .htaccess.
+ */
+function data_dir()
+{
+    static $dir = null;
+    if ($dir !== null) {
+        return $dir;
+    }
+    $site = dirname(__DIR__);
+    foreach ([dirname($site) . '/loora-data', $site . '/_data'] as $candidate) {
+        if ((is_dir($candidate) || @mkdir($candidate, 0755, true)) && is_writable($candidate)) {
+            if ($candidate === $site . '/_data' && !is_file($candidate . '/.htaccess')) {
+                @file_put_contents($candidate . '/.htaccess', "Require all denied\nDeny from all\n");
+            }
+            return $dir = $candidate;
+        }
+    }
+    json_out(['error' => 'Dossier de données inaccessible sur le serveur.'], 500);
+}
+
+function write_atomic($file, $content)
+{
+    $tmp = $file . '.tmp';
+    if (file_put_contents($tmp, $content, LOCK_EX) === false || !rename($tmp, $file)) {
+        json_out(['error' => "L'enregistrement a échoué sur le serveur."], 500);
+    }
+}
+
+/** Contenu du site en JSON : celui enregistré depuis le dashboard, sinon le contenu de départ */
+function load_store_json()
+{
+    $file = data_dir() . '/content.json';
+    if (is_file($file)) {
+        $json = file_get_contents($file);
+        if ($json !== false && is_array(json_decode($json, true))) {
+            return $json;
+        }
+    }
+    $seed = @file_get_contents(__DIR__ . '/seed.json');
+    return $seed !== false ? $seed : '{}';
+}
+
+function load_store()
+{
+    $store = json_decode(load_store_json(), true);
+    return is_array($store) ? $store : [];
+}
+
+/* ------------------------------------------------------------ Dashboard */
+
+function admin_token()
+{
+    return hash_hmac('sha256', 'loora-admin-session-v1', ADMIN_HASH);
+}
+
+function is_admin()
+{
+    $cookie = $_COOKIE['loora_admin'] ?? '';
+    return ADMIN_HASH !== '' && is_string($cookie) && $cookie !== '' && hash_equals(admin_token(), $cookie);
+}
+
+function require_admin()
+{
+    if (!is_admin()) {
+        json_out(['error' => 'Non autorisé.'], 401);
+    }
+}
+
+function check_password($password)
+{
+    if (ADMIN_HASH === '') {
+        return false;
+    }
+    return hash_equals(ADMIN_HASH, hash_pbkdf2('sha256', $password, ADMIN_SALT, ADMIN_ITERATIONS, 64));
+}
+
+function set_admin_cookie($value, $expires)
+{
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    setcookie('loora_admin', $value, [
+        'expires' => $expires,
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => $https,
+    ]);
+}
+
+/* ------------------------------------------------------------ Commandes */
+
+/** Les écritures passent une par une pour ne jamais perdre de commande */
+function with_orders_lock($task)
+{
+    $lock = fopen(data_dir() . '/orders.lock', 'c');
+    flock($lock, LOCK_EX);
+    try {
+        return $task();
+    } finally {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+    }
+}
+
+function read_orders()
+{
+    $file = data_dir() . '/orders.jsonl';
+    $orders = [];
+    if (!is_file($file)) {
+        return $orders;
+    }
+    foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $order = json_decode($line, true);
+        if (!is_array($order)) {
+            continue;
+        }
+        if (!isset(ORDER_STATUSES[$order['status'] ?? ''])) {
+            $order['status'] = 'a_confirmer';
+        }
+        $orders[] = $order;
+    }
+    return $orders;
+}
+
+function encode_order($order)
+{
+    return json_encode($order, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
+function write_orders(array $orders)
+{
+    $lines = array_map('encode_order', $orders);
+    write_atomic(data_dir() . '/orders.jsonl', $orders ? implode("\n", $lines) . "\n" : '');
+}
+
+/** Date ISO 8601 en UTC avec millisecondes, comme new Date().toISOString() */
+function iso_now()
+{
+    $date = DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)));
+    $date->setTimezone(new DateTimeZone('UTC'));
+    return $date->format('Y-m-d\TH:i:s.v\Z');
+}

@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/_next/static/chunks/0umf92h1sb77c.js"
+3:I[39756,["$2"],"default"]
+4:I[37457,["$2"],"default"]
+5:"/_next/static/chunks/0g4s5ww_tki9k.js"
+6:I[36852,["$2","$5"],"SiteHeader"]
+d:I[97367,["$2"],"OutletBoundary"]
+e:"$Sreact.suspense"
+10:"ViewportBoundary"
+11:I[97367,["$2"],"$10"]
+13:"MetadataBoundary"
+14:I[97367,["$2"],"$13"]
+16:I[68027,["$2"],"default",1]
+:HL["/_next/static/chunks/3s0l1qk1z4c09.css","style"]
+:HL["/_next/static/media/4fb4363ca5982ca4-s.p.40_3w74kn95bo.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/78eb2d37ccba2007-s.p.2csanl8cs02r-.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/d90dd95b053d9495-s.p.3r2y_bth_sjsm.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/dcfedef55b10026d-s.p.40m0sdlh8l0dz.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/f9a7f4f17784fbaa-s.p.08tn9snzkmifr.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/chunks/275efay507qcr.css","style"]
+8:X
+b:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":["$Lc",[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/275efay507qcr.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/_next/static/chunks/066oscmidjln5.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/_next/static/chunks/2w6rtfqf1-wdw.js","async":true,"nonce":"$undefined"}]],["$","$Ld",null,{"children":["$","$e",null,{"name":"Next.MetadataOutlet","children":"$@f"}]}]]}],"p":false,"v":null}}]]
+a:[["children",{"s":{"n":"slug","t":"d","k":"boucles-goutte","s":[]},"h":66048,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$8"},"c":"$Qb"}]]
+9:[["children",{"s":"produit","h":131584,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$8"},"c":"$Qa"}]]
+7:[["children",{"s":"(site)","h":131584,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","$L6",null,{}],["$","div",null,{"dir":"rtl","lang":"ar","className":"flex flex-1 flex-col items-center bg-white px-4 py-32 text-center","children":[["$","p",null,{"className":"font-[family-name:var(--font-cairo)] text-5xl font-black text-ink","children":"404"}],["$","p",null,{"className":"mt-4 font-[family-name:var(--font-cairo)] text-xl text-muted","children":"الصفحة غير موجودة"}]]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$8"},"c":"$Q9"}]]
+0:{"P":null,"c":["","produit","boucles-goutte",""],"q":"","i":false,"t":{"t":{"s":"","h":131600,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/3s0l1qk1z4c09.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/_next/static/chunks/0umf92h1sb77c.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"fr","className":"_5JKqmq_variable _3i0aa_variable iIT01G_variable h-full antialiased","children":["$","body",null,{"className":"flex min-h-full flex-col","children":["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","$L6",null,{}],["$","div",null,{"dir":"rtl","lang":"ar","className":"flex flex-1 flex-col items-center bg-white px-4 py-32 text-center","children":[["$","p",null,{"className":"font-[family-name:var(--font-cairo)] text-5xl font-black text-ink","children":"404"}],["$","p",null,{"className":"mt-4 font-[family-name:var(--font-cairo)] text-xl text-muted","children":"الصفحة غير موجودة"}]]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]]}],"p":false,"v":null},"c":"$Q7"},"h":{"r":["$","$1","h",{"children":[null,["$","$L11",null,{"children":"$L12"}],["$","$L14",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$e",null,{"name":"Next.Metadata","children":"$L15"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$16",[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/3s0l1qk1z4c09.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"zzu7SK57NN4I_pRLCi-6Z"}
+17:"/_next/static/chunks/066oscmidjln5.js"
+18:"/_next/static/chunks/2w6rtfqf1-wdw.js"
+19:I[18745,["$2","$17","$18"],"ProductPage"]
+8:C
+c:["$","$L19",null,{"slug":"boucles-goutte"}]
+12:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+1a:I[27201,["$2"],"IconMark"]
+f:null
+15:[["$","title","0",{"children":"Goutte · LOORA"}],["$","meta","1",{"name":"description","content":"LOORA, maison de bijoux fins : bagues, colliers, boucles d'oreilles et bracelets en or 18 carats et argent massif, façonnés à la main."}],["$","link","2",{"rel":"icon","href":"/favicon.ico?favicon.117ezoe8m31dk.ico","sizes":"48x48","type":"image/x-icon"}],["$","$L1a","3",{}]]
