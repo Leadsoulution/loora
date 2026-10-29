@@ -380,7 +380,11 @@ function woo_order(array $o)
 {
     $slug = (string) ($o['slug'] ?? '');
     $index = array_search($slug, LOORA_PRODUCTS, true);
-    $name = (string) ($o['product'] ?? $slug);
+    // Nom complet, comme sur la page : type + nom (« طقم الفراشة الذهبية + أقراط … »)
+    static $store = null;
+    $store = $store ?? load_store();
+    $type = (string) ($store['products'][$slug]['type'] ?? '');
+    $name = trim($type . ' ' . (string) ($o['product'] ?? $slug));
     if (!empty($o['size'])) {
         $name .= ' — taille ' . $o['size'];
     }
