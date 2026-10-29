@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Media } from "@/components/Media";
-import type { Store } from "@/lib/content-types";
+import { cleanStore, type Store } from "@/lib/content-types";
 import { CATEGORY_LABEL, formatPrice, PRODUCTS } from "@/lib/products";
 import type { PreviewTarget } from "./apercu/LivePreview";
 import { OrdersPanel } from "./OrdersPanel";
@@ -40,7 +40,7 @@ export function AdminApp() {
   async function load() {
     const res = await fetch("/api/admin/content", { cache: "no-store" });
     if (res.status === 401) return setAuth("out");
-    const store = (await res.json()) as Store;
+    const store = cleanStore(await res.json());
     setSaved(store);
     setDraft(store);
     setAuth("in");
@@ -76,11 +76,12 @@ export function AdminApp() {
       const res = await fetch("/api/admin/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
+        // Nettoyé ici : le serveur PHP enregistre tel quel
+        body: JSON.stringify(cleanStore(draft)),
       });
       if (res.status === 401) return setAuth("out");
       if (!res.ok) throw new Error();
-      const store = (await res.json()) as Store;
+      const store = cleanStore(await res.json());
       setSaved(store);
       setDraft(store);
       setNotice({ type: "ok", text: "Modifications enregistrées et publiées ✓" });
@@ -161,7 +162,7 @@ export function AdminApp() {
                     </Button>
                     <h1 className="font-display text-3xl">{draft.products[view.slug].name}</h1>
                     <Link
-                      href={`/produit/${view.slug}`}
+                      href={`/produit/${view.slug}/`}
                       target="_blank"
                       className="ml-auto text-[13px] text-muted hover:text-ink"
                     >

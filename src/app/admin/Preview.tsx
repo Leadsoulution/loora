@@ -87,7 +87,7 @@ export function Preview({
         <div style={{ width: width * scale, height: height * scale }} className="shrink-0">
           <iframe
             ref={frame}
-            src="/admin/apercu"
+            src="/admin/apercu/"
             title="Aperçu du site"
             style={{ width, height, transform: `scale(${scale})`, transformOrigin: "top left" }}
             className="bg-white"

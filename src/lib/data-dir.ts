@@ -1,8 +1,8 @@
 import path from "node:path";
 
-// Données modifiables (contenu, images envoyées, commandes).
-// En production, DATA_DIR pointe vers un dossier hors du projet pour survivre aux redéploiements.
+// Données modifiables en local (`npm run dev`) : contenu, images envoyées, commandes.
+// En ligne, c'est l'API PHP (public/api) qui les gère.
 export const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(process.cwd(), "data");
 
-// Contenu de départ livré avec le code (versionné dans Git), utilisé tant que DATA_DIR est vide.
-export const SEED_DIR = path.join(process.cwd(), "seed");
+// Contenu de départ livré avec le site, utilisé tant que rien n'a été enregistré.
+export const SEED_CONTENT = path.join(process.cwd(), "public", "api", "seed.json");

@@ -1,0 +1,38 @@
+# À chaque envoi sur main : construit le site (dossier out/) et le publie sur la branche « hostinger ».
+# Hostinger (hPanel → Avancé → GIT) déploie cette branche dans public_html.
+name: Publier pour Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hostinger
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Publier out/ sur la branche hostinger
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: hostinger
+          publish_dir: ./out
+          enable_jekyll: true
+          commit_message: "Site construit depuis"
