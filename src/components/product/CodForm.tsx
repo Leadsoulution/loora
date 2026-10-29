@@ -120,10 +120,10 @@ export function CodForm({
                     <span className="pa-radio" />
                     <span className={`pa-pack-img ${o.image ? "custom" : ""}`}>
                       {o.image ? (
-                        <Media src={o.image} art={art} />
+                        <Media src={o.image} art={art} thumb />
                       ) : (
                         Array.from({ length: Math.min(o.qty, MAX_PACK_IMAGES) }, (_, i) => (
-                          <Media key={i} src={packImage} art={art} />
+                          <Media key={i} src={packImage} art={art} thumb />
                         ))
                       )}
                     </span>

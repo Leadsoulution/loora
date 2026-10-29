@@ -1,10 +1,14 @@
-# À chaque envoi sur main : construit le site (dossier out/) et le publie sur la branche « hostinger ».
-# Hostinger (hPanel → Avancé → GIT) déploie cette branche dans public_html.
+# À chaque envoi sur main : construit le site (dossier out/) et le publie sur la branche « hostinger »,
+# que Hostinger déploie dans public_html.
+# Toutes les 6 heures : reconstruit avec le contenu modifié dans le dashboard, pour que les pages
+# HTML générées restent à jour (aucune publication si rien n'a changé).
 name: Publier pour Hostinger
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 permissions:

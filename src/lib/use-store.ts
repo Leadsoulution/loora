@@ -10,11 +10,15 @@ declare global {
   }
 }
 
-/** Contenu du site, côté navigateur : injecté dans la page par le serveur PHP, sinon chargé depuis /api/content. */
-export function useStore(): Store | null {
+/**
+ * Contenu du site, côté navigateur : injecté dans la page par le serveur PHP, sinon chargé depuis /api/content.
+ * `enabled = false` : rien n'est chargé (la page a déjà son contenu).
+ */
+export function useStore(enabled = true): Store | null {
   const [store, setStore] = useState<Store | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
     if (window.__LOORA_STORE__) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- données déjà présentes dans la page
       setStore(cleanStore(window.__LOORA_STORE__));
@@ -28,7 +32,7 @@ export function useStore(): Store | null {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [enabled]);
 
   return store;
 }

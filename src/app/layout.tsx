@@ -1,23 +1,12 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, Cairo, Jost } from "next/font/google";
+import { Cairo } from "next/font/google";
 import "./globals.css";
 
-const bodoni = Bodoni_Moda({
-  variable: "--font-bodoni",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-});
-
-const jost = Jost({
-  variable: "--font-jost",
-  subsets: ["latin"],
-});
-
-// Police des fiches produit en arabe
+// Police des fiches produit en arabe (police variable : un seul fichier pour toutes les graisses).
+// Les polices du dashboard sont chargées dans app/admin/layout.tsx.
 const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
-  weight: ["400", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${bodoni.variable} ${jost.variable} ${cairo.variable} h-full antialiased`}>
+    <html lang="fr" className={`${cairo.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

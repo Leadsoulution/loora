@@ -42,3 +42,4 @@ next-env.d.ts
 
 # commandes COD enregistrées en local
 /data
+/public/api/built.json

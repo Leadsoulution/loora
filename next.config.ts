@@ -8,6 +8,8 @@ export default function config(phase: string): NextConfig {
   return {
     output: dev ? undefined : "export",
     trailingSlash: true,
+    // Même commit + même contenu = mêmes fichiers : la reconstruction planifiée ne republie rien d'inutile
+    generateBuildId: async () => process.env.GITHUB_SHA ?? null,
     pageExtensions: dev ? ["tsx", "ts", "dev.ts"] : ["tsx", "ts"],
     experimental: {
       agentFeedback: true,

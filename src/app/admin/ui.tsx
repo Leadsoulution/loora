@@ -15,9 +15,42 @@ export const JEWEL_LABELS: Record<string, string> = {
   "jewel:macro": "Illustration (gros plan)",
 };
 
+/** Redimensionne une image dans le navigateur (WebP), ou null si le navigateur ne sait pas encoder en WebP */
+async function toWebp(bitmap: ImageBitmap, max: number, quality: number): Promise<Blob | null> {
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+  return blob?.type === "image/webp" ? blob : null;
+}
+
+/**
+ * Envoie une image : compressée en WebP (1600 px max) avec ses variantes 800 px et 240 px,
+ * pour des pages rapides sur téléphone. GIF et navigateurs sans WebP : envoyée telle quelle.
+ */
 export async function uploadImage(file: File): Promise<string> {
   const body = new FormData();
-  body.append("file", file);
+  let main: Blob = file;
+  if (file.type !== "image/gif") {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const [full, medium, thumb] = [
+        await toWebp(bitmap, 1600, 0.82),
+        await toWebp(bitmap, 800, 0.78),
+        await toWebp(bitmap, 240, 0.7),
+      ];
+      bitmap.close();
+      if (full && medium && thumb) {
+        // On garde l'original s'il est déjà plus léger et dans un format accepté
+        if (full.size < file.size || !/^image\/(jpeg|png|webp|avif)$/.test(file.type)) main = full;
+        body.append("medium", medium, "medium.webp");
+        body.append("thumb", thumb, "thumb.webp");
+      }
+    } catch {}
+  }
+  body.append("file", main, main === file ? file.name : "image.webp");
   const res = await fetch("/api/admin/upload", { method: "POST", body });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error ?? "Échec de l'envoi de l'image.");

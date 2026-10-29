@@ -2,27 +2,35 @@
 
 import { useEffect } from "react";
 import { LogoHeader } from "@/components/LogoHeader";
+import type { Logo, ProductContent, Theme } from "@/lib/content-types";
 import { getProduct } from "@/lib/products";
 import { useStore } from "@/lib/use-store";
 import { ProductView } from "./ProductView";
 
-/** Fiche produit complète (en-tête + fiche), affichée avec le contenu enregistré dans le dashboard. */
-export function ProductPage({ slug }: { slug: string }) {
-  const store = useStore();
+export type ProductPageData = { logo: Logo; theme: Theme; content: ProductContent };
+
+/**
+ * Fiche produit complète (en-tête + fiche).
+ * `initial` : contenu écrit dans la page HTML à la compilation (affichage immédiat) ;
+ * sans lui, le contenu enregistré est lu dans le navigateur.
+ */
+export function ProductPage({ slug, initial }: { slug: string; initial?: ProductPageData }) {
+  const store = useStore(!initial);
   const product = getProduct(slug);
-  const content = store?.products[slug];
+  const data = initial ?? (store && { logo: store.logo, theme: store.theme, content: store.products[slug] });
 
+  const title = data?.content && `${data.content.type} ${data.content.name} · LOORA`;
   useEffect(() => {
-    if (content) document.title = `${content.type} ${content.name} · LOORA`;
-  }, [content]);
+    if (title) document.title = title;
+  }, [title]);
 
-  if (!store || !product || !content) return <div className="min-h-screen flex-1 bg-white" />;
+  if (!data?.content || !product) return <div className="min-h-screen flex-1 bg-white" />;
 
   return (
     <>
-      <LogoHeader logo={store.logo} />
+      <LogoHeader logo={data.logo} />
       <main className="flex-1 bg-white">
-        <ProductView product={product} content={content} theme={store.theme} />
+        <ProductView product={product} content={data.content} theme={data.theme} />
       </main>
     </>
   );

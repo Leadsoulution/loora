@@ -15,6 +15,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Polices du dashboard (variables définies dans app/admin/layout.tsx) */
+.admin-fonts {
+  --font-display: var(--font-bodoni), "Didot", serif;
+  --font-sans: var(--font-jost), system-ui, sans-serif;
+  font-family: var(--font-sans);
+}
+
 body {
   background: #fff;
   color: var(--color-ink);

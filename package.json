@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-content.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "password": "node scripts/set-password.mjs"
+    "password": "node scripts/set-password.mjs",
+    "images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

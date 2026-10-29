@@ -37,6 +37,8 @@ export function ProductView({
 }) {
   const [view, setView] = useState(0);
   const [showSticky, setShowSticky] = useState(false);
+  // Les autres photos de la galerie se chargent une fois la page prête (la première passe avant tout)
+  const [galleryReady, setGalleryReady] = useState(false);
 
   const art = { category: product.category, metal: product.metal, stone: product.stone };
   const images = content.images.length > 0 ? content.images : ["jewel"];
@@ -54,6 +56,16 @@ export function ProductView({
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const ready = () => setGalleryReady(true);
+    if (document.readyState === "complete") {
+      const t = setTimeout(ready);
+      return () => clearTimeout(t);
+    }
+    window.addEventListener("load", ready);
+    return () => window.removeEventListener("load", ready);
+  }, []);
+
   const goToOrder = () => document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
   const step = (dir: 1 | -1) => setView((current + dir + images.length) % images.length);
 
@@ -63,9 +75,19 @@ export function ProductView({
         {/* ================= GALERIE ================= */}
         <section className="pa-gallery">
           <div className="pa-photo">
-            {images.map((src, i) => (
-              <Media key={`${src}-${i}`} src={src} art={art} alt={content.name} className={current === i ? "" : "opacity-0"} />
-            ))}
+            {images.map(
+              (src, i) =>
+                (i === current || galleryReady) && (
+                  <Media
+                    key={`${src}-${i}`}
+                    src={src}
+                    art={art}
+                    alt={content.name}
+                    priority={i === 0}
+                    className={current === i ? "" : "opacity-0"}
+                  />
+                ),
+            )}
             {discount > 0 && <span className="pa-badge">خصم {discount}%</span>}
           </div>
 
@@ -83,7 +105,7 @@ export function ProductView({
                     onClick={() => setView(i)}
                     aria-label={`صورة ${i + 1}`}
                   >
-                    <Media src={src} art={art} />
+                    <Media src={src} art={art} thumb />
                   </button>
                 ))}
               </div>
@@ -151,7 +173,7 @@ export function ProductView({
           >
             {sticky.showImage && (
               <div className="pad-sticky-img">
-                <Media src={images[0]} art={art} />
+                <Media src={images[0]} art={art} thumb />
               </div>
             )}
             {sticky.showText && (
