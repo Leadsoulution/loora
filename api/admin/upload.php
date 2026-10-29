@@ -45,9 +45,23 @@ $dir = data_dir() . '/uploads';
 if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
     json_out(['error' => "Impossible d'enregistrer l'image sur le serveur."], 500);
 }
-$name = (int) round(microtime(true) * 1000) . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
+$base = (int) round(microtime(true) * 1000) . '-' . bin2hex(random_bytes(4));
+$name = "$base.$ext";
 if (!move_uploaded_file($file['tmp_name'], "$dir/$name")) {
     json_out(['error' => "Impossible d'enregistrer l'image sur le serveur."], 500);
+}
+
+// Variantes préparées par le dashboard : 800 px (« .m.webp ») et 240 px (« .t.webp »)
+foreach (['medium' => 'm', 'thumb' => 't'] as $field => $suffix) {
+    $variant = $_FILES[$field] ?? null;
+    if (!is_array($variant) || $variant['error'] !== UPLOAD_ERR_OK || $variant['size'] > MAX_SIZE
+        || !is_uploaded_file($variant['tmp_name'])) {
+        continue;
+    }
+    $info = @getimagesize($variant['tmp_name']);
+    if (($info['mime'] ?? '') === 'image/webp') {
+        move_uploaded_file($variant['tmp_name'], "$dir/$base.$suffix.webp");
+    }
 }
 
 json_out(['url' => "/uploads/$name"]);

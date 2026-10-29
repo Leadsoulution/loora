@@ -2,10 +2,10 @@
 2:"/_next/static/chunks/0umf92h1sb77c.js"
 3:I[39756,["$2"],"default"]
 4:I[37457,["$2"],"default"]
-5:"/_next/static/chunks/0g4s5ww_tki9k.js"
+5:"/_next/static/chunks/1pn81shjt_1gz.js"
 6:I[36852,["$2","$5"],"SiteHeader"]
 f:"/_next/static/chunks/1-13r3hg73w2z.js"
-10:"/_next/static/chunks/2w6rtfqf1-wdw.js"
+10:"/_next/static/chunks/0db1hp-h72imw.js"
 11:I[26343,["$2","$f","$10"],"LivePreview"]
 12:I[97367,["$2"],"OutletBoundary"]
 13:"$Sreact.suspense"
@@ -14,21 +14,22 @@ f:"/_next/static/chunks/1-13r3hg73w2z.js"
 18:"MetadataBoundary"
 19:I[97367,["$2"],"$18"]
 1a:I[27201,["$2"],"IconMark"]
-:HL["/_next/static/chunks/3s0l1qk1z4c09.css","style"]
+:HL["/_next/static/chunks/3h2s86su-dcc2.css","style"]
+:HL["/_next/static/chunks/43jx3cwxog46n.css","style"]
 :HL["/_next/static/chunks/275efay507qcr.css","style"]
 8:X
-b:X
-b:C
-e:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","$L11",null,{}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/275efay507qcr.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/1-13r3hg73w2z.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/2w6rtfqf1-wdw.js","async":true}]],["$","$L12",null,{"children":["$","$13",null,{"name":"Next.MetadataOutlet","children":"$@14"}]}]]}],"p":"$@15","v":null,"s":"$8"}}]]
-c:[["children",{"s":"apercu","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@d","v":"$b","s":"$8"},"c":"$Qe"}]]
-9:[["children",{"s":"admin","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@a","v":"$b","s":"$8"},"c":"$Qc"}]]
-0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/3s0l1qk1z4c09.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/0umf92h1sb77c.js","async":true}]],["$","html",null,{"lang":"fr","className":"_5JKqmq_variable _3i0aa_variable iIT01G_variable h-full antialiased","children":["$","body",null,{"className":"flex min-h-full flex-col","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","$L6",null,{}],["$","div",null,{"dir":"rtl","lang":"ar","className":"flex flex-1 flex-col items-center bg-white px-4 py-32 text-center","children":[["$","p",null,{"className":"font-[family-name:var(--font-cairo)] text-5xl font-black text-ink","children":"404"}],["$","p",null,{"className":"mt-4 font-[family-name:var(--font-cairo)] text-xl text-muted","children":"الصفحة غير موجودة"}]]}]],[]]}]}]}]]}],"p":"$@7","v":null,"s":"$8"},"c":"$Q9"},"h":{"r":["$","$1","h",{"children":[null,["$","$L17",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L19",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$13",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Aperçu · LOORA"}],["$","meta","1",{"name":"description","content":"LOORA, maison de bijoux fins : bagues, colliers, boucles d'oreilles et bracelets en or 18 carats et argent massif, façonnés à la main."}],["$","meta","2",{"name":"robots","content":"noindex"}],["$","link","3",{"rel":"icon","href":"/favicon.ico?favicon.117ezoe8m31dk.ico","sizes":"48x48","type":"image/x-icon"}],["$","$L1a","4",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@1b","v":null,"s":"$8"}},"a":"$@1c","u":"$@1d","b":"zzu7SK57NN4I_pRLCi-6Z"}
+d:X
+d:C
+e:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","$L11",null,{}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/275efay507qcr.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/1-13r3hg73w2z.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/0db1hp-h72imw.js","async":true}]],["$","$L12",null,{"children":["$","$13",null,{"name":"Next.MetadataOutlet","children":"$@14"}]}]]}],"p":"$@15","v":null,"s":"$8"}}]]
+b:[["children",{"s":"apercu","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@c","v":"$d","s":"$8"},"c":"$Qe"}]]
+9:[["children",{"s":"admin","h":96,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/43jx3cwxog46n.css","precedence":"next"}]],["$","div",null,{"className":"_5JKqmq_variable _3i0aa_variable admin-fonts flex min-h-full flex-1 flex-col","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]}]]}],"p":"$@a","v":null,"s":"$8"},"c":"$Qb"}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/3h2s86su-dcc2.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/0umf92h1sb77c.js","async":true}]],["$","html",null,{"lang":"fr","className":"jdpqJa_variable h-full antialiased","children":["$","body",null,{"className":"flex min-h-full flex-col","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","$L6",null,{}],["$","div",null,{"dir":"rtl","lang":"ar","className":"flex flex-1 flex-col items-center bg-white px-4 py-32 text-center","children":[["$","p",null,{"className":"font-[family-name:var(--font-cairo)] text-5xl font-black text-ink","children":"404"}],["$","p",null,{"className":"mt-4 font-[family-name:var(--font-cairo)] text-xl text-muted","children":"الصفحة غير موجودة"}]]}]],[]]}]}]}]]}],"p":"$@7","v":null,"s":"$8"},"c":"$Q9"},"h":{"r":["$","$1","h",{"children":[null,["$","$L17",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L19",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$13",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Aperçu · LOORA"}],["$","meta","1",{"name":"description","content":"LOORA, maison de bijoux fins : bagues, colliers, boucles d'oreilles et bracelets en or 18 carats et argent massif, façonnés à la main."}],["$","meta","2",{"name":"robots","content":"noindex"}],["$","link","3",{"rel":"icon","href":"/favicon.ico?favicon.117ezoe8m31dk.ico","sizes":"48x48","type":"image/x-icon"}],["$","$L1a","4",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@1b","v":null,"s":"$8"}},"a":"$@1c","u":"$@1d","b":"62bcdfca277119deec959e41e7322a44051c09f0"}
 14:null
 8:300
 1d:true
 8:C
 1c:0
-d:"$undefined"
+c:"$undefined"
 a:"$undefined"
 7:"$undefined"
 1b:"$undefined"
