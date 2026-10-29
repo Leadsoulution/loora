@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ivory: #f6f1ea;
+  --color-bone: #ece3d5;
+  --color-ink: #1e1914;
+  --color-gold: #a8834c;
+  --color-muted: #7a6e62;
+
+  --font-display: var(--font-bodoni), "Didot", serif;
+  --font-sans: var(--font-jost), system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #fff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 350;
+}
+
+::selection {
+  background: #d9bf8c;
+  color: var(--color-ink);
+}
+
+@layer components {
+  /* Bouton du dashboard (connexion) */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--color-ink);
+    color: var(--color-ivory);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .btn-primary:hover {
+    background: var(--color-gold);
+  }
+}
+
+/* Scintillement des illustrations de bijoux */
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+.twinkle {
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twinkle { animation: none; }
+  html { scroll-behavior: auto; }
+}
