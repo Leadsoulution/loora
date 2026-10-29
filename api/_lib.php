@@ -213,6 +213,215 @@ function write_orders(array $orders)
     write_atomic(data_dir() . '/orders.jsonl', $orders ? implode("\n", $lines) . "\n" : '');
 }
 
+/* ------------------------------------------------------------ Connexions (dops, webhook) */
+
+function default_settings()
+{
+    return [
+        // dops lit les commandes comme une boutique WooCommerce (api/wc.php) et est prévenue à chaque commande
+        'dops' => ['enabled' => false, 'key' => '', 'secret' => '', 'webhook' => '', 'lastSuccess' => '', 'lastError' => ''],
+        // Autre application : reçoit chaque commande en JSON
+        'webhook' => '',
+    ];
+}
+
+function load_settings()
+{
+    $settings = default_settings();
+    $saved = json_decode((string) @file_get_contents(data_dir() . '/settings.json'), true);
+    if (is_array($saved['dops'] ?? null)) {
+        foreach ($settings['dops'] as $k => $v) {
+            if (isset($saved['dops'][$k]) && gettype($saved['dops'][$k]) === gettype($v)) {
+                $settings['dops'][$k] = $saved['dops'][$k];
+            }
+        }
+    }
+    if (is_string($saved['webhook'] ?? null)) {
+        $settings['webhook'] = $saved['webhook'];
+    }
+    return $settings;
+}
+
+function save_settings(array $settings)
+{
+    write_atomic(data_dir() . '/settings.json', json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+}
+
+/** Adresse du site (https://loora.ma) */
+function site_url()
+{
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    return ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+}
+
+/** Envoie un JSON en POST. Retourne [succès, code HTTP, corps ou message d'erreur]. */
+function post_json($url, $payload, $timeout = 10)
+{
+    $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $body,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'User-Agent: LOORA'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => $timeout,
+        ]);
+        $response = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        if ($response === false) {
+            return [false, 0, $error ?: 'Adresse injoignable.'];
+        }
+        return [$status >= 200 && $status < 300, $status, (string) $response];
+    }
+    $response = @file_get_contents($url, false, stream_context_create(['http' => [
+        'method' => 'POST',
+        'header' => "Content-Type: application/json\r\nUser-Agent: LOORA\r\n",
+        'content' => $body,
+        'timeout' => $timeout,
+        'ignore_errors' => true,
+    ]]));
+    $status = preg_match('#^HTTP/\S+ (\d+)#', $http_response_header[0] ?? '', $m) ? (int) $m[1] : 0;
+    if ($response === false) {
+        return [false, 0, 'Adresse injoignable.'];
+    }
+    return [$status >= 200 && $status < 300, $status, $response];
+}
+
+/**
+ * Prévient dops qu'une commande est arrivée (son adresse « webhook WooCommerce »).
+ * dops relit alors les commandes récentes via api/wc.php. Résultat gardé pour le dashboard.
+ */
+function notify_dops($order = null)
+{
+    $settings = load_settings();
+    $dops = $settings['dops'];
+    if (!$dops['enabled'] || $dops['webhook'] === '') {
+        return [false, 'Connexion dops désactivée ou adresse du webhook manquante.'];
+    }
+    list($ok, $status, $body) = post_json($dops['webhook'], $order ? woo_order($order) : ['test' => true]);
+    // dops répond toujours 200 et met l'éventuelle erreur d'import dans le corps
+    $reply = json_decode($body, true);
+    if ($ok && is_array($reply) && !empty($reply['error'])) {
+        $ok = false;
+        $message = 'dops : ' . $reply['error'];
+    } elseif ($ok) {
+        $message = is_array($reply) && isset($reply['importees'])
+            ? "dops a répondu : {$reply['importees']} nouvelle(s) commande(s) importée(s)."
+            : 'dops a bien reçu la notification.';
+    } else {
+        $message = $status ? "dops a répondu avec l'erreur $status." : "dops injoignable : $body";
+    }
+    // Relu juste avant d'écrire : les réglages ont pu changer pendant l'envoi
+    $settings = load_settings();
+    $settings['dops'][$ok ? 'lastSuccess' : 'lastError'] = iso_now() . ($ok ? '' : " — $message");
+    save_settings($settings);
+    return [$ok, $message];
+}
+
+/** Prévient les applications reliées d'une nouvelle commande */
+function notify_integrations(array $order)
+{
+    $settings = load_settings();
+    if ($settings['dops']['enabled'] && $settings['dops']['webhook'] !== '') {
+        notify_dops($order);
+    }
+    $webhook = $settings['webhook'] !== '' ? $settings['webhook'] : ORDER_WEBHOOK_URL;
+    if ($webhook !== '') {
+        post_json($webhook, $order);
+    }
+}
+
+/** Répond tout de suite au navigateur, puis le script continue (envois aux applications reliées) */
+function respond_early($data)
+{
+    ignore_user_abort(true);
+    $body = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    header('Content-Length: ' . strlen($body));
+    header('Connection: close');
+    echo $body;
+    if (function_exists('litespeed_finish_request')) {
+        litespeed_finish_request();
+    } elseif (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        while (ob_get_level() > 0) {
+            ob_end_flush();
+        }
+        flush();
+    }
+}
+
+/* ------------------------------------------------------------ Format WooCommerce (pour dops) */
+
+const WOO_STATUS = [
+    'a_confirmer' => 'processing',
+    'confirmee' => 'processing',
+    'expediee' => 'processing',
+    'livree' => 'completed',
+    'annulee' => 'cancelled',
+    'retour' => 'refunded',
+];
+
+/** Numéro de commande WooCommerce : la référence LO-XXXX lue en base 36 (heure de la commande en ms) */
+function woo_order_id($ref)
+{
+    return (int) base_convert(substr((string) $ref, 3), 36, 10);
+}
+
+/** Commande LOORA au format de l'API REST WooCommerce v3 (ce que dops lit) */
+function woo_order(array $o)
+{
+    $slug = (string) ($o['slug'] ?? '');
+    $index = array_search($slug, LOORA_PRODUCTS, true);
+    $name = (string) ($o['product'] ?? $slug);
+    if (!empty($o['size'])) {
+        $name .= ' — taille ' . $o['size'];
+    }
+    $notes = [];
+    foreach (is_array($o['extra'] ?? null) ? $o['extra'] : [] as $x) {
+        $notes[] = ($x['label'] ?? '') . ' : ' . ($x['value'] ?? '');
+    }
+    $address = ['address_1' => (string) ($o['address'] ?? ''), 'city' => (string) ($o['city'] ?? ''), 'country' => 'MA'];
+    $total = (string) ($o['total'] ?? 0);
+    return [
+        'id' => woo_order_id($o['ref'] ?? ''),
+        'number' => (string) ($o['ref'] ?? ''),
+        'status' => WOO_STATUS[$o['status'] ?? ''] ?? 'processing',
+        'currency' => 'MAD',
+        'date_created' => (string) ($o['createdAt'] ?? ''),
+        'date_created_gmt' => rtrim((string) ($o['createdAt'] ?? ''), 'Z'),
+        'date_modified' => (string) ($o['updatedAt'] ?? $o['createdAt'] ?? ''),
+        'total' => $total,
+        'payment_method' => 'cod',
+        'payment_method_title' => 'Paiement à la livraison',
+        'customer_note' => implode("\n", $notes),
+        'billing' => ['first_name' => (string) ($o['name'] ?? ''), 'last_name' => '', 'phone' => (string) ($o['phone'] ?? '')] + $address,
+        'shipping' => ['first_name' => (string) ($o['name'] ?? ''), 'last_name' => ''] + $address,
+        'line_items' => [[
+            'id' => 1,
+            'product_id' => $index === false ? 0 : $index + 1,
+            'variation_id' => 0,
+            'name' => $name,
+            'sku' => $slug,
+            'quantity' => (int) ($o['qty'] ?? 1),
+            'total' => $total,
+            'meta_data' => array_values(array_filter([
+                !empty($o['offer']) ? ['key' => 'Offre', 'value' => $o['offer']] : null,
+                !empty($o['metal']) ? ['key' => 'Métal', 'value' => $o['metal']] : null,
+                !empty($o['size']) ? ['key' => 'Taille', 'value' => $o['size']] : null,
+            ])),
+        ]],
+        'meta_data' => [],
+    ];
+}
+
 /** Date ISO 8601 en UTC avec millisecondes, comme new Date().toISOString() */
 function iso_now()
 {

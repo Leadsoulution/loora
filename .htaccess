@@ -7,6 +7,13 @@ ErrorDocument 404 /404.html
   RewriteEngine On
   RewriteBase /
 
+  # Transmet l'en-tête Authorization à PHP (clés de la connexion dops)
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+  # Connexion dops : LOORA répond comme une boutique WooCommerce (API REST v3)
+  RewriteRule ^wp-json/wc/v3/?(.*)$ api/wc.php?route=$1 [L,QSA]
+
   # Fichiers internes de l'API et dossier de secours des données : jamais accessibles
   RewriteRule ^api/(_lib|config)\.php$ - [F,L]
   RewriteRule ^_data(/|$) - [F,L]
