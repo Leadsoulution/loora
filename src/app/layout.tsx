@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s · LOORA",
   },
   description:
-    "LOORA, maison de bijoux fins : bagues, colliers, boucles d'oreilles et bracelets en or 18 carats et argent massif, façonnés à la main.",
+    "LOORA : bijoux en acier inoxydable doré, colliers, boucles d'oreilles et parures, livrés partout au Maroc avec paiement à la livraison.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

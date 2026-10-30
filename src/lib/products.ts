@@ -29,9 +29,9 @@ export const CATEGORY_LABEL: Record<Category, string> = {
 };
 
 export const METAL_LABEL: Record<Metal, string> = {
-  or: "Or jaune 18 carats",
-  argent: "Argent massif 925",
-  rose: "Or rose 18 carats",
+  or: "Acier inoxydable doré",
+  argent: "Acier inoxydable argenté",
+  rose: "Acier inoxydable or rose",
 };
 
 /** Les 3 produits du site. Textes, prix et photos se modifient dans le dashboard (/admin). */
