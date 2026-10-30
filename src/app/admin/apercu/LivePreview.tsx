@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { LogoHeader } from "@/components/LogoHeader";
-import { ProductView } from "@/components/product/ProductView";
+import { ProductBody } from "@/components/product/ProductPage";
 import type { Store } from "@/lib/content-types";
 import { getProduct } from "@/lib/products";
 
@@ -29,7 +29,7 @@ export function LivePreview() {
   return (
     <>
       <LogoHeader logo={data.store.logo} />
-      <ProductView
+      <ProductBody
         key={product.slug}
         product={product}
         content={data.store.products[product.slug]}

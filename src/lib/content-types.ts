@@ -172,7 +172,18 @@ export type ProductContent = {
   fields: FormField[];
   sticky: StickyBar;
   sections: Section[];
+  /** Design de la page (voir PRODUCT_DESIGNS) */
+  design: ProductDesign;
+  /** Code article envoyé à dops / WooCommerce (vide = identifiant de la page) */
+  sku: string;
 };
+
+export type ProductDesign = "classic" | "rose";
+
+export const PRODUCT_DESIGNS: { value: ProductDesign; label: string; hint: string }[] = [
+  { value: "classic", label: "Classique", hint: "Fiche LOORA aux couleurs du thème" },
+  { value: "rose", label: "Violet « Princesse »", hint: "Page violette : galerie, offres, histoires en photos, FAQ" },
+];
 
 export const MAX_OFFERS = 6;
 
@@ -332,6 +343,8 @@ export function defaultProductContent(product: Product): ProductContent {
     offers: defaultOffers(product.price),
     sizes: product.category === "bagues" ? RING_SIZES.map(String) : [],
     sizeTitle: "اختر المقاس",
+    design: "classic",
+    sku: "",
     fields: DEFAULT_FIELDS.map((f) => ({ ...f })),
     sticky: { ...DEFAULT_STICKY },
     sections: [
@@ -594,6 +607,8 @@ export function cleanStore(raw: unknown): Store {
       fields: cleanFields(p.fields),
       sticky: cleanSticky(p.sticky),
       sections: Array.isArray(p.sections) ? p.sections.slice(0, 20).map(cleanSection) : base.sections,
+      design: p.design === "rose" ? "rose" : "classic",
+      sku: str(p.sku, 40).replace(/[^\w.-]/g, ""),
     };
   }
   const logo = cleanLogo(input.logo ?? {});

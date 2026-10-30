@@ -384,6 +384,8 @@ function woo_order(array $o)
     static $store = null;
     $store = $store ?? load_store();
     $type = (string) ($store['products'][$slug]['type'] ?? '');
+    // Code article choisi dans le dashboard (sinon l'identifiant de la page) : dops relie la commande au produit
+    $sku = (string) ($store['products'][$slug]['sku'] ?? '');
     $name = trim($type . ' ' . (string) ($o['product'] ?? $slug));
     if (!empty($o['size'])) {
         $name .= ' — taille ' . $o['size'];
@@ -413,7 +415,7 @@ function woo_order(array $o)
             'product_id' => $index === false ? 0 : $index + 1,
             'variation_id' => 0,
             'name' => $name,
-            'sku' => $slug,
+            'sku' => $sku !== '' ? $sku : $slug,
             'quantity' => (int) ($o['qty'] ?? 1),
             'total' => $total,
             'meta_data' => array_values(array_filter([

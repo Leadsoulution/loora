@@ -3,9 +3,10 @@
 import { useEffect } from "react";
 import { LogoHeader } from "@/components/LogoHeader";
 import type { Logo, ProductContent, Theme } from "@/lib/content-types";
-import { getProduct } from "@/lib/products";
+import { getProduct, type Product } from "@/lib/products";
 import { useStore } from "@/lib/use-store";
 import { ProductView } from "./ProductView";
+import { RoseView } from "./rose/RoseView";
 
 export type ProductPageData = { logo: Logo; theme: Theme; content: ProductContent };
 
@@ -30,8 +31,17 @@ export function ProductPage({ slug, initial }: { slug: string; initial?: Product
     <>
       <LogoHeader logo={data.logo} />
       <main className="flex-1 bg-white">
-        <ProductView product={product} content={data.content} theme={data.theme} />
+        <ProductBody product={product} content={data.content} theme={data.theme} />
       </main>
     </>
+  );
+}
+
+/** Corps de la fiche selon le design choisi dans le dashboard */
+export function ProductBody({ product, content, theme }: { product: Product; content: ProductContent; theme: Theme }) {
+  return content.design === "rose" ? (
+    <RoseView product={product} content={content} />
+  ) : (
+    <ProductView product={product} content={content} theme={theme} />
   );
 }

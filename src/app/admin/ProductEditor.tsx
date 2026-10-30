@@ -16,6 +16,7 @@ import {
   newOffer,
   type Offer,
   newSection,
+  PRODUCT_DESIGNS,
   SECTION_LAYOUTS,
   type ProductContent,
   type Section,
@@ -91,8 +92,17 @@ function InfosTab({
   value: ProductContent;
   set: <K extends keyof ProductContent>(key: K, v: ProductContent[K]) => void;
 }) {
+  const design = PRODUCT_DESIGNS.find((d) => d.value === value.design) ?? PRODUCT_DESIGNS[0];
   return (
     <div className="space-y-5">
+      <Card title="Design de la page">
+        <Segmented value={value.design} options={PRODUCT_DESIGNS} onChange={(d) => set("design", d)} />
+        <p className="text-[12px] text-muted">{design.hint}</p>
+        <Field label="Code article (SKU)" hint="Envoyé à dops avec chaque commande. Vide = identifiant de la page.">
+          <Input value={value.sku} placeholder="Ex. : LOR-ARJ" onChange={(v) => set("sku", v.replace(/[^\w.-]/g, ""))} />
+        </Field>
+      </Card>
+
       <Card title="Titre">
         <div className="grid grid-cols-2 gap-4">
           <Field label="Type de bijou" hint="Ex. : خاتم، قلادة">
