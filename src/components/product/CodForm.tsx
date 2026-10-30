@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Media } from "@/components/Media";
 import { PHONE_FIELD_ID, type FormField, type ProductContent } from "@/lib/content-types";
@@ -38,6 +39,7 @@ export function CodForm({
   const [honeypot, setHoneypot] = useState("");
   const [errors, setErrors] = useState<OrderErrors>({});
   const [sending, setSending] = useState(false);
+  const router = useRouter();
   const [done, setDone] = useState<{ ref: string; total: number } | null>(null);
 
   // L'offre choisie peut disparaître si elle est supprimée dans le dashboard (aperçu)
@@ -73,6 +75,8 @@ export function CodForm({
         return;
       }
       setDone({ ref: data.ref, total: data.total });
+      // Page de remerciement (le message ci-dessous reste affiché pendant le chargement)
+      router.push(`/merci/?ref=${encodeURIComponent(data.ref)}&p=${product.slug}`);
     } catch {
       setErrors({ form: "تعذّر الاتصال. تحقّق من الإنترنت وحاول مرة أخرى." });
     } finally {
