@@ -65,7 +65,7 @@ function woo_products()
             'id' => $i + 1,
             'name' => trim(($p['type'] ?? '') . ' ' . ($p['name'] ?? $slug)),
             'slug' => $slug,
-            'sku' => $slug,
+            'sku' => !empty($p['sku']) && is_string($p['sku']) ? $p['sku'] : $slug,
             'permalink' => site_url() . "/produit/$slug/",
             'type' => 'simple',
             'status' => 'publish',

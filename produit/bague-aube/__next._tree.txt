@@ -1,9 +1,9 @@
-:HL["/_next/static/chunks/0cb82ao87lwu1.css","style"]
+:HL["/_next/static/chunks/3h_59auy2k14_.css","style"]
 :HL["/_next/static/media/4fb4363ca5982ca4-s.p.40_3w74kn95bo.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/_next/static/media/f9a7f4f17784fbaa-s.p.08tn9snzkmifr.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-:HL["/_next/static/chunks/275efay507qcr.css","style"]
+:HL["/_next/static/chunks/1tkbwfipuxnbc.css","style"]
 4:[["children",{"s":"__PAGE__","h":160}]]
 3:[["children",{"s":{"n":"slug","t":"d","k":"bague-aube","s":[]},"h":65632,"c":"$Q4"}]]
 2:[["children",{"s":"produit","h":131168,"c":"$Q3"}]]
 1:[["children",{"s":"(site)","h":131168,"c":"$Q2"}]]
-0:{"b":"f2d3326dd589e2af6b8d1393dbcaab9a30000213","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}
+0:{"b":"658adecba0ea0eaa5adccca2ba9c12a8139ef57b","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}
