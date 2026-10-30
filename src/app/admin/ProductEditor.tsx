@@ -615,8 +615,37 @@ const ITEM_LABELS: Record<SectionLayout, { items: string; add: string; title: st
 function SectionsTab({ sections, onChange, art }: { sections: Section[]; onChange: (s: Section[]) => void; art: Art }) {
   const [openId, setOpenId] = useState<string | null>(sections[0]?.id ?? null);
   const [adding, setAdding] = useState(false);
+  // Glisser-déposer : section tenue par la poignée ⠿ (souris ou doigt)
+  const [dragId, setDragId] = useState<string | null>(null);
+  const list = useRef<HTMLDivElement>(null);
 
   const update = (i: number, s: Section) => onChange(sections.map((x, j) => (j === i ? s : x)));
+
+  function startDrag(e: React.PointerEvent<HTMLButtonElement>, id: string) {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    // Sections repliées pendant le déplacement : la liste reste courte et lisible
+    setOpenId(null);
+    setDragId(id);
+  }
+
+  function drag(e: React.PointerEvent) {
+    if (!dragId || !list.current) return;
+    const from = sections.findIndex((s) => s.id === dragId);
+    const cards = list.current.querySelectorAll<HTMLElement>("[data-section-card]");
+    // La section prend la place de celle dont le pointeur a dépassé le milieu
+    let to = from;
+    cards.forEach((card, j) => {
+      const { top, height } = card.getBoundingClientRect();
+      const middle = top + height / 2;
+      if (j < from && e.clientY < middle) to = Math.min(to, j);
+      if (j > from && e.clientY > middle) to = Math.max(to, j);
+    });
+    if (to !== from) onChange(move(sections, from, to));
+    // Défilement automatique près des bords de l'écran
+    if (e.clientY < 70) window.scrollBy(0, -14);
+    else if (e.clientY > window.innerHeight - 70) window.scrollBy(0, 14);
+  }
 
   function add(layout: SectionLayout) {
     const s = newSection(layout);
@@ -628,69 +657,97 @@ function SectionsTab({ sections, onChange, art }: { sections: Section[]; onChang
   return (
     <div className="space-y-3">
       <p className="text-[13px] text-muted">
-        Ces sections s&apos;affichent sous le formulaire de commande, dans cet ordre.
+        Ces sections s&apos;affichent sous le formulaire de commande, dans cet ordre. Glissez la poignée ⠿ pour
+        changer l&apos;ordre.
       </p>
 
-      {sections.map((s, i) => {
-        const open = openId === s.id;
-        return (
-          <div key={s.id} className={`rounded-xl border bg-white ${open ? "border-ink/30 shadow-sm" : "border-ink/10"}`}>
-            <div className="flex items-center gap-2 px-3 py-2">
-              <button
-                type="button"
-                onClick={() => setOpenId(open ? null : s.id)}
-                className="flex min-w-0 flex-1 items-center gap-3 py-1 text-start"
-              >
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bone text-[12px] font-medium">
-                  {i + 1}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[11px] uppercase tracking-[0.12em] text-muted">
-                    {SECTION_LAYOUTS.find((l) => l.value === s.layout)?.label}
-                    {s.background === "cream" && " · fond crème"}
+      <div ref={list} className="space-y-3">
+        {sections.map((s, i) => {
+          const open = openId === s.id;
+          const dragging = dragId === s.id;
+          return (
+            <div
+              key={s.id}
+              data-section-card
+              className={`rounded-xl border bg-white transition-shadow ${
+                dragging
+                  ? "relative z-10 border-gold shadow-lg ring-2 ring-gold/30"
+                  : open
+                    ? "border-ink/30 shadow-sm"
+                    : "border-ink/10"
+              }`}
+            >
+              <div className="flex items-center gap-2 px-3 py-2">
+                <button
+                  type="button"
+                  aria-label="Glisser pour déplacer la section"
+                  title="Glisser pour déplacer"
+                  onPointerDown={(e) => startDrag(e, s.id)}
+                  onPointerMove={drag}
+                  onPointerUp={() => setDragId(null)}
+                  onPointerCancel={() => setDragId(null)}
+                  className={`flex h-8 w-6 shrink-0 touch-none select-none items-center justify-center rounded text-[18px] leading-none text-muted hover:bg-ink/5 hover:text-ink ${
+                    dragging ? "cursor-grabbing" : "cursor-grab"
+                  }`}
+                >
+                  ⠿
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpenId(open ? null : s.id)}
+                  className="flex min-w-0 flex-1 items-center gap-3 py-1 text-start"
+                >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bone text-[12px] font-medium">
+                    {i + 1}
                   </span>
-                  <span dir="rtl" className="block truncate font-[family-name:var(--font-cairo)] text-[15px]">
-                    {s.title} {s.highlight}
+                  <span className="min-w-0">
+                    <span className="block text-[11px] uppercase tracking-[0.12em] text-muted">
+                      {SECTION_LAYOUTS.find((l) => l.value === s.layout)?.label}
+                      {s.background === "cream" && " · fond crème"}
+                    </span>
+                    <span dir="rtl" className="block truncate font-[family-name:var(--font-cairo)] text-[15px]">
+                      {s.title} {s.highlight}
+                    </span>
                   </span>
-                </span>
-              </button>
-              <IconButton label="Monter" disabled={i === 0} onClick={() => onChange(move(sections, i, i - 1))}>
-                ↑
-              </IconButton>
-              <IconButton
-                label="Descendre"
-                disabled={i === sections.length - 1}
-                onClick={() => onChange(move(sections, i, i + 1))}
-              >
-                ↓
-              </IconButton>
-              <IconButton
-                label="Dupliquer"
-                onClick={() => {
-                  const copy = { ...s, id: Math.random().toString(36).slice(2, 10), items: s.items.map((x) => ({ ...x })) };
-                  const next = [...sections];
-                  next.splice(i + 1, 0, copy);
-                  onChange(next);
-                  setOpenId(copy.id);
-                }}
-              >
-                ⧉
-              </IconButton>
-              <IconButton
-                label="Supprimer la section"
-                onClick={() => {
-                  if (confirm(`Supprimer la section « ${s.title} ${s.highlight} » ?`)) {
-                    onChange(sections.filter((_, j) => j !== i));
-                  }
-                }}
-              >
-                <span className="text-[#a8322a]">🗑</span>
-              </IconButton>
+                </button>
+                <IconButton label="Monter" disabled={i === 0} onClick={() => onChange(move(sections, i, i - 1))}>
+                  ↑
+                </IconButton>
+                <IconButton
+                  label="Descendre"
+                  disabled={i === sections.length - 1}
+                  onClick={() => onChange(move(sections, i, i + 1))}
+                >
+                  ↓
+                </IconButton>
+                <IconButton
+                  label="Dupliquer"
+                  onClick={() => {
+                    const copy = { ...s, id: Math.random().toString(36).slice(2, 10), items: s.items.map((x) => ({ ...x })) };
+                    const next = [...sections];
+                    next.splice(i + 1, 0, copy);
+                    onChange(next);
+                    setOpenId(copy.id);
+                  }}
+                >
+                  ⧉
+                </IconButton>
+                <IconButton
+                  label="Supprimer la section"
+                  onClick={() => {
+                    if (confirm(`Supprimer la section « ${s.title} ${s.highlight} » ?`)) {
+                      onChange(sections.filter((_, j) => j !== i));
+                    }
+                  }}
+                >
+                  <span className="text-[#a8322a]">🗑</span>
+                </IconButton>
+              </div>
+              {open && <SectionForm section={s} onChange={(next) => update(i, next)} art={art} />}
             </div>
-            {open && <SectionForm section={s} onChange={(next) => update(i, next)} art={art} />}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {adding ? (
         <div className="rounded-xl border border-dashed border-ink/30 bg-white p-4">
