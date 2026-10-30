@@ -76,7 +76,7 @@ export function CodForm({
       }
       setDone({ ref: data.ref, total: data.total });
       // Page de remerciement (le message ci-dessous reste affiché pendant le chargement)
-      router.push(`/merci/?ref=${encodeURIComponent(data.ref)}&p=${product.slug}`);
+      router.push(`/merci/?ref=${encodeURIComponent(data.ref)}`);
     } catch {
       setErrors({ form: "تعذّر الاتصال. تحقّق من الإنترنت وحاول مرة أخرى." });
     } finally {

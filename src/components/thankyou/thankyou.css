@@ -6,7 +6,6 @@
   --gray-500: #777;
   --gray-300: #d9d9d9;
   --gray-100: #f2f2f2;
-  --gray-50: #f7f7f7;
   --wa: #25d366;
   position: relative;
   min-height: 100vh;
@@ -199,8 +198,6 @@
 .ty-btn:hover { transform: translateY(-2px); }
 .ty-btn-wa { background: var(--wa); color: #fff; }
 .ty-btn-wa:hover { opacity: 0.92; }
-.ty-btn-back { background: #fff; color: var(--black); border: 1.5px solid var(--gray-300); }
-.ty-btn-back:hover { background: var(--gray-50); }
 
 @media (prefers-reduced-motion: reduce) {
   .ty * { animation: none !important; }
