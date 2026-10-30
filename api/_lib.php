@@ -13,9 +13,9 @@ require __DIR__ . '/config.php';
 const LOORA_PRODUCTS = ['bague-aube', 'collier-lune-dor', 'boucles-goutte'];
 
 const METAL_LABEL = [
-    'or' => 'Or jaune 18 carats',
-    'argent' => 'Argent massif 925',
-    'rose' => 'Or rose 18 carats',
+    'or' => 'Acier inoxydable doré',
+    'argent' => 'Acier inoxydable argenté',
+    'rose' => 'Acier inoxydable or rose',
 ];
 
 const ORDER_STATUSES = [
