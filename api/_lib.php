@@ -218,7 +218,9 @@ function write_orders(array $orders)
 function default_settings()
 {
     return [
-        // dops lit les commandes comme une boutique WooCommerce (api/wc.php) et est prévenue à chaque commande
+        // Orderly (dops) par « formulaire web » : chaque commande est envoyée à son adresse (clé incluse)
+        'orderly' => ['url' => '', 'lastSuccess' => '', 'lastError' => ''],
+        // Ancienne méthode : dops lit les commandes comme une boutique WooCommerce (api/wc.php)
         'dops' => ['enabled' => false, 'key' => '', 'secret' => '', 'webhook' => '', 'lastSuccess' => '', 'lastError' => ''],
         // Autre application : reçoit chaque commande en JSON
         'webhook' => '',
@@ -229,10 +231,13 @@ function load_settings()
 {
     $settings = default_settings();
     $saved = json_decode((string) @file_get_contents(data_dir() . '/settings.json'), true);
-    if (is_array($saved['dops'] ?? null)) {
-        foreach ($settings['dops'] as $k => $v) {
-            if (isset($saved['dops'][$k]) && gettype($saved['dops'][$k]) === gettype($v)) {
-                $settings['dops'][$k] = $saved['dops'][$k];
+    foreach (['orderly', 'dops'] as $group) {
+        if (!is_array($saved[$group] ?? null)) {
+            continue;
+        }
+        foreach ($settings[$group] as $k => $v) {
+            if (isset($saved[$group][$k]) && gettype($saved[$group][$k]) === gettype($v)) {
+                $settings[$group][$k] = $saved[$group][$k];
             }
         }
     }
@@ -323,10 +328,74 @@ function notify_dops($order = null)
     return [$ok, $message];
 }
 
+/**
+ * Commande au format « formulaire web » d'Orderly : noms de champs qu'il reconnaît
+ * (name, phone, city, address, product, quantity, total, reference, note).
+ */
+function orderly_payload(array $o)
+{
+    $slug = (string) ($o['slug'] ?? '');
+    $store = load_store();
+    $content = is_array($store['products'][$slug] ?? null) ? $store['products'][$slug] : [];
+    $product = trim(($content['type'] ?? '') . ' ' . ($o['product'] ?? $slug));
+    $sku = (string) ($content['sku'] ?? '');
+    $note = [];
+    if (!empty($o['offer'])) {
+        $note[] = 'Offre : ' . $o['offer'];
+    }
+    if (!empty($o['size'])) {
+        $note[] = 'Taille : ' . $o['size'];
+    }
+    if (!empty($o['metal'])) {
+        $note[] = $o['metal'];
+    }
+    $note[] = 'Code article : ' . ($sku !== '' ? $sku : $slug);
+    foreach (is_array($o['extra'] ?? null) ? $o['extra'] : [] as $x) {
+        $note[] = ($x['label'] ?? '') . ' : ' . ($x['value'] ?? '');
+    }
+    return [
+        'reference' => (string) ($o['ref'] ?? ''),
+        'name' => (string) ($o['name'] ?? ''),
+        'phone' => (string) ($o['phone'] ?? ''),
+        'city' => (string) ($o['city'] ?? ''),
+        'address' => (string) ($o['address'] ?? ''),
+        'product' => $product,
+        'quantity' => (int) ($o['qty'] ?? 1),
+        'total' => $o['total'] ?? 0,
+        'note' => implode(' | ', $note),
+    ];
+}
+
+/** Envoie une commande à Orderly ; le résultat est gardé pour le dashboard (page Connexions) */
+function notify_orderly(array $payload)
+{
+    $url = load_settings()['orderly']['url'];
+    if ($url === '') {
+        return [false, "Adresse d'Orderly manquante."];
+    }
+    list($ok, $status, $body) = post_json($url, $payload);
+    $reply = json_decode($body, true);
+    if ($ok && is_array($reply) && !empty($reply['ok'])) {
+        $message = 'Orderly a enregistré la commande' . (!empty($reply['reference']) ? " ({$reply['reference']})." : '.');
+    } else {
+        $ok = false;
+        $message = is_array($reply) && !empty($reply['error'])
+            ? 'Orderly : ' . $reply['error']
+            : ($status ? "Orderly a répondu avec l'erreur $status." : "Orderly injoignable : $body");
+    }
+    $settings = load_settings();
+    $settings['orderly'][$ok ? 'lastSuccess' : 'lastError'] = iso_now() . " — $message";
+    save_settings($settings);
+    return [$ok, $message];
+}
+
 /** Prévient les applications reliées d'une nouvelle commande */
 function notify_integrations(array $order)
 {
     $settings = load_settings();
+    if ($settings['orderly']['url'] !== '') {
+        notify_orderly(orderly_payload($order));
+    }
     if ($settings['dops']['enabled'] && $settings['dops']['webhook'] !== '') {
         notify_dops($order);
     }
