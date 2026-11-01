@@ -98,9 +98,25 @@ function InfosTab({
       <Card title="Design de la page">
         <Segmented value={value.design} options={PRODUCT_DESIGNS} onChange={(d) => set("design", d)} />
         <p className="text-[12px] text-muted">{design.hint}</p>
-        <Field label="Code article (SKU)" hint="Envoyé à dops avec chaque commande. Vide = identifiant de la page.">
-          <Input value={value.sku} placeholder="Ex. : LOR-ARJ" onChange={(v) => set("sku", v.replace(/[^\w.-]/g, ""))} />
-        </Field>
+      </Card>
+
+      <Card title="Produit dans Orderly">
+        <div className="grid grid-cols-2 gap-4">
+          <Field
+            label="Nom du produit dans Orderly"
+            hint="Écrit exactement comme dans Orderly → Produits : c'est ce nom qui relie la commande au produit et à son stock."
+          >
+            <Input
+              value={value.orderlyName}
+              placeholder={`Vide = ${[value.type, value.name].filter(Boolean).join(" ")}`}
+              onChange={(v) => set("orderlyName", v.replace(/,/g, " "))}
+            />
+          </Field>
+          <Field label="Code article (SKU)" hint="Envoyé dans la note de la commande. Vide = identifiant de la page.">
+            <Input value={value.sku} placeholder="Ex. : LOR-ARJ" onChange={(v) => set("sku", v.replace(/[^\w.-]/g, ""))} />
+          </Field>
+        </div>
+        <p className="text-[12px] text-muted">La quantité commandée (1, 2 ou 3 selon l&apos;offre) est envoyée avec chaque commande.</p>
       </Card>
 
       <Card title="Titre">

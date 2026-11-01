@@ -174,8 +174,10 @@ export type ProductContent = {
   sections: Section[];
   /** Design de la page (voir PRODUCT_DESIGNS) */
   design: ProductDesign;
-  /** Code article envoyé à dops / WooCommerce (vide = identifiant de la page) */
+  /** Code article envoyé à Orderly / WooCommerce (vide = identifiant de la page) */
   sku: string;
+  /** Nom exact du produit dans le catalogue Orderly : c'est par ce nom qu'Orderly reconnaît le produit */
+  orderlyName: string;
 };
 
 export type ProductDesign = "classic" | "rose";
@@ -345,6 +347,7 @@ export function defaultProductContent(product: Product): ProductContent {
     sizeTitle: "اختر المقاس",
     design: "classic",
     sku: "",
+    orderlyName: "",
     fields: DEFAULT_FIELDS.map((f) => ({ ...f })),
     sticky: { ...DEFAULT_STICKY },
     sections: [
@@ -609,6 +612,8 @@ export function cleanStore(raw: unknown): Store {
       sections: Array.isArray(p.sections) ? p.sections.slice(0, 20).map(cleanSection) : base.sections,
       design: p.design === "rose" ? "rose" : "classic",
       sku: str(p.sku, 40).replace(/[^\w.-]/g, ""),
+      // Une virgule couperait le produit en deux lignes dans Orderly
+      orderlyName: str(p.orderlyName, 120).replace(/,/g, " "),
     };
   }
   const logo = cleanLogo(input.logo ?? {});
