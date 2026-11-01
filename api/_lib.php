@@ -337,7 +337,10 @@ function orderly_payload(array $o)
     $slug = (string) ($o['slug'] ?? '');
     $store = load_store();
     $content = is_array($store['products'][$slug] ?? null) ? $store['products'][$slug] : [];
-    $product = trim(($content['type'] ?? '') . ' ' . ($o['product'] ?? $slug));
+    // Orderly reconnaît le produit par son nom exact dans son catalogue ; une virgule y ferait deux produits
+    $orderlyName = trim((string) ($content['orderlyName'] ?? ''));
+    $product = $orderlyName !== '' ? $orderlyName : trim(($content['type'] ?? '') . ' ' . ($o['product'] ?? $slug));
+    $product = str_replace(',', ' ', $product);
     $sku = (string) ($content['sku'] ?? '');
     $note = [];
     if (!empty($o['offer'])) {
