@@ -1,8 +1,9 @@
 <?php
 // Connexions du dashboard (dops, webhook).
 //   GET  : réglages
-//   PUT  : { dopsEnabled, dopsWebhook, webhook }
-//   POST : { action: "regenerate" } nouvelles clés dops, { action: "test" } notification d'essai à dops
+//   PUT  : { orderlyUrl, dopsEnabled, dopsWebhook, webhook }
+//   POST : { action: "test-orderly" } commande d'essai envoyée à Orderly,
+//          { action: "regenerate" } nouvelles clés dops, { action: "test" } notification d'essai à dops
 define('LOORA', 1);
 require __DIR__ . '/../_lib.php';
 
@@ -25,11 +26,13 @@ $settings = load_settings();
 
 if (method() === 'PUT') {
     $body = read_json_body() ?? [];
+    $orderlyUrl = str_val($body['orderlyUrl'] ?? '', 500);
     $dopsWebhook = str_val($body['dopsWebhook'] ?? '', 500);
     $webhook = str_val($body['webhook'] ?? '', 500);
-    if (!valid_url($dopsWebhook) || !valid_url($webhook)) {
+    if (!valid_url($orderlyUrl) || !valid_url($dopsWebhook) || !valid_url($webhook)) {
         json_out(['error' => "L'adresse doit commencer par https://"], 400);
     }
+    $settings['orderly']['url'] = $orderlyUrl;
     $settings['dops']['enabled'] = !empty($body['dopsEnabled']);
     $settings['dops']['webhook'] = $dopsWebhook;
     $settings['webhook'] = $webhook;
@@ -47,6 +50,21 @@ if (method() === 'POST') {
         $settings = new_keys($settings);
         save_settings($settings);
         json_out($settings);
+    }
+    if ($action === 'test-orderly') {
+        // Vraie commande créée dans Orderly, clairement marquée comme essai
+        list($ok, $message) = notify_orderly([
+            'reference' => 'LO-TEST-' . strtoupper(base_convert((string) time(), 10, 36)),
+            'name' => 'Test LOORA',
+            'phone' => '0612345678',
+            'city' => 'Casablanca',
+            'address' => 'Commande de test',
+            'product' => 'Test de connexion LOORA',
+            'quantity' => 1,
+            'total' => 0,
+            'note' => 'Commande de test envoyée depuis le dashboard LOORA : à supprimer.',
+        ]);
+        json_out(['ok' => $ok, 'message' => $message, 'settings' => load_settings()]);
     }
     if ($action === 'test') {
         list($ok, $message) = notify_dops();
