@@ -613,7 +613,7 @@ export function cleanStore(raw: unknown): Store {
       design: p.design === "rose" ? "rose" : "classic",
       sku: str(p.sku, 40).replace(/[^\w.-]/g, ""),
       // Une virgule couperait le produit en deux lignes dans Orderly
-      orderlyName: str(p.orderlyName, 120).replace(/,/g, " "),
+      orderlyName: str(p.orderlyName, 120).replace(/[\s,]+/g, " ").trim(),
     };
   }
   const logo = cleanLogo(input.logo ?? {});

@@ -340,7 +340,8 @@ function orderly_payload(array $o)
     // Orderly reconnaît le produit par son nom exact dans son catalogue ; une virgule y ferait deux produits
     $orderlyName = trim((string) ($content['orderlyName'] ?? ''));
     $product = $orderlyName !== '' ? $orderlyName : trim(($content['type'] ?? '') . ' ' . ($o['product'] ?? $slug));
-    $product = str_replace(',', ' ', $product);
+    // Espaces doublés ou virgules : Orderly ne retrouverait plus le produit (ni sa photo) par son nom
+    $product = trim(preg_replace('/[\s,]+/u', ' ', $product));
     $city = trim((string) ($o['city'] ?? ''));
     $address = trim((string) ($o['address'] ?? ''));
     // Pas de note : dans Orderly elle est réservée au service de confirmation
