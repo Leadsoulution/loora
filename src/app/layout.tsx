@@ -6,7 +6,8 @@ import "./globals.css";
 // Les polices du dashboard sont chargées dans app/admin/layout.tsx.
 const cairo = Cairo({
   variable: "--font-cairo",
-  subsets: ["arabic", "latin"],
+  // Seul l'arabe est préchargé (laisse la bande passante à la photo) ; le latin (« DH », chiffres) suit à la demande
+  subsets: ["arabic"],
 });
 
 export const metadata: Metadata = {
