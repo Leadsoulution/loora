@@ -330,7 +330,7 @@ function notify_dops($order = null)
 
 /**
  * Commande au format « formulaire web » d'Orderly : noms de champs qu'il reconnaît
- * (name, phone, city, address, product, quantity, total, reference, note).
+ * (name, phone, city, address, product, quantity, total, reference).
  */
 function orderly_payload(array $o)
 {
@@ -341,23 +341,9 @@ function orderly_payload(array $o)
     $orderlyName = trim((string) ($content['orderlyName'] ?? ''));
     $product = $orderlyName !== '' ? $orderlyName : trim(($content['type'] ?? '') . ' ' . ($o['product'] ?? $slug));
     $product = str_replace(',', ' ', $product);
-    $sku = (string) ($content['sku'] ?? '');
     $city = trim((string) ($o['city'] ?? ''));
     $address = trim((string) ($o['address'] ?? ''));
-    $note = [];
-    if (!empty($o['offer'])) {
-        $note[] = 'Offre : ' . $o['offer'];
-    }
-    if (!empty($o['size'])) {
-        $note[] = 'Taille : ' . $o['size'];
-    }
-    if (!empty($o['metal'])) {
-        $note[] = $o['metal'];
-    }
-    $note[] = 'Code article : ' . ($sku !== '' ? $sku : $slug);
-    foreach (is_array($o['extra'] ?? null) ? $o['extra'] : [] as $x) {
-        $note[] = ($x['label'] ?? '') . ' : ' . ($x['value'] ?? '');
-    }
+    // Pas de note : dans Orderly elle est réservée au service de confirmation
     return [
         'reference' => (string) ($o['ref'] ?? ''),
         'name' => (string) ($o['name'] ?? ''),
@@ -368,7 +354,6 @@ function orderly_payload(array $o)
         'product' => $product,
         'quantity' => (int) ($o['qty'] ?? 1),
         'total' => $o['total'] ?? 0,
-        'note' => implode(' | ', $note),
     ];
 }
 
