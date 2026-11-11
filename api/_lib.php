@@ -342,6 +342,8 @@ function orderly_payload(array $o)
     $product = $orderlyName !== '' ? $orderlyName : trim(($content['type'] ?? '') . ' ' . ($o['product'] ?? $slug));
     $product = str_replace(',', ' ', $product);
     $sku = (string) ($content['sku'] ?? '');
+    $city = trim((string) ($o['city'] ?? ''));
+    $address = trim((string) ($o['address'] ?? ''));
     $note = [];
     if (!empty($o['offer'])) {
         $note[] = 'Offre : ' . $o['offer'];
@@ -360,8 +362,9 @@ function orderly_payload(array $o)
         'reference' => (string) ($o['ref'] ?? ''),
         'name' => (string) ($o['name'] ?? ''),
         'phone' => (string) ($o['phone'] ?? ''),
-        'city' => (string) ($o['city'] ?? ''),
-        'address' => (string) ($o['address'] ?? ''),
+        // Formulaire sans case ville : l'adresse en tient lieu, pour qu'Orderly ait toujours une ville à afficher
+        'city' => $city !== '' ? $city : $address,
+        'address' => $address,
         'product' => $product,
         'quantity' => (int) ($o['qty'] ?? 1),
         'total' => $o['total'] ?? 0,
