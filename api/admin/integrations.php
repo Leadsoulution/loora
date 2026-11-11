@@ -1,7 +1,7 @@
 <?php
 // Connexions du dashboard (dops, webhook).
 //   GET  : réglages
-//   PUT  : { orderlyUrl, dopsEnabled, dopsWebhook, webhook }
+//   PUT  : { orderlyUrl, orderlyHookSecret, dopsEnabled, dopsWebhook, webhook }
 //   POST : { action: "test-orderly" } commande d'essai envoyée à Orderly,
 //          { action: "regenerate" } nouvelles clés dops, { action: "test" } notification d'essai à dops
 define('LOORA', 1);
@@ -29,10 +29,15 @@ if (method() === 'PUT') {
     $orderlyUrl = str_val($body['orderlyUrl'] ?? '', 500);
     $dopsWebhook = str_val($body['dopsWebhook'] ?? '', 500);
     $webhook = str_val($body['webhook'] ?? '', 500);
+    $hookSecret = str_val($body['orderlyHookSecret'] ?? '', 200);
+    if (!preg_match('/^[\w-]*$/', $hookSecret)) {
+        json_out(['error' => 'Le secret du webhook ne doit contenir que des lettres, des chiffres, _ ou -.'], 400);
+    }
     if (!valid_url($orderlyUrl) || !valid_url($dopsWebhook) || !valid_url($webhook)) {
         json_out(['error' => "L'adresse doit commencer par https://"], 400);
     }
     $settings['orderly']['url'] = $orderlyUrl;
+    $settings['orderly']['hookSecret'] = $hookSecret;
     $settings['dops']['enabled'] = !empty($body['dopsEnabled']);
     $settings['dops']['webhook'] = $dopsWebhook;
     $settings['webhook'] = $webhook;
