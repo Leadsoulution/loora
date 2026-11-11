@@ -331,7 +331,7 @@ function notify_dops($order = null)
 
 /**
  * Commande au format « formulaire web » d'Orderly : noms de champs qu'il reconnaît
- * (name, phone, city, address, product, quantity, total, reference).
+ * (name, phone, city, address, product, sku, quantity, total, reference).
  */
 function orderly_payload(array $o)
 {
@@ -343,6 +343,7 @@ function orderly_payload(array $o)
     $product = $orderlyName !== '' ? $orderlyName : trim(($content['type'] ?? '') . ' ' . ($o['product'] ?? $slug));
     // Espaces doublés ou virgules : Orderly ne retrouverait plus le produit (ni sa photo) par son nom
     $product = trim(preg_replace('/[\s,]+/u', ' ', $product));
+    $sku = trim((string) ($content['sku'] ?? ''));
     $city = trim((string) ($o['city'] ?? ''));
     $address = trim((string) ($o['address'] ?? ''));
     // Pas de note : dans Orderly elle est réservée au service de confirmation
@@ -354,6 +355,8 @@ function orderly_payload(array $o)
         'city' => $city !== '' ? $city : $address,
         'address' => $address,
         'product' => $product,
+        // Code article : Orderly y retrouve le produit de son catalogue, sa photo et son code transporteur
+        'sku' => $sku,
         'quantity' => (int) ($o['qty'] ?? 1),
         'total' => $o['total'] ?? 0,
     ];
