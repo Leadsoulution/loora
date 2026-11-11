@@ -37,6 +37,11 @@ if (method() === 'PUT') {
         json_out(['error' => "L'adresse doit commencer par https://"], 400);
     }
     $settings['orderly']['url'] = $orderlyUrl;
+    // Nouveau secret : les messages de l'ancien ne veulent plus rien dire
+    if ($hookSecret !== $settings['orderly']['hookSecret']) {
+        $settings['orderly']['hookLast'] = '';
+        $settings['orderly']['hookError'] = '';
+    }
     $settings['orderly']['hookSecret'] = $hookSecret;
     $settings['dops']['enabled'] = !empty($body['dopsEnabled']);
     $settings['dops']['webhook'] = $dopsWebhook;
