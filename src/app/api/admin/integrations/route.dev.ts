@@ -49,11 +49,19 @@ export async function PUT(request: Request) {
   const orderlyUrl = String(body.orderlyUrl ?? "").trim();
   const dopsWebhook = String(body.dopsWebhook ?? "").trim();
   const webhook = String(body.webhook ?? "").trim();
+  const hookSecret = String(body.orderlyHookSecret ?? "").trim();
+  if (!/^[\w-]*$/.test(hookSecret)) {
+    return NextResponse.json(
+      { error: "Le secret du webhook ne doit contenir que des lettres, des chiffres, _ ou -." },
+      { status: 400 },
+    );
+  }
   if (!validUrl(orderlyUrl) || !validUrl(dopsWebhook) || !validUrl(webhook)) {
     return NextResponse.json({ error: "L'adresse doit commencer par https://" }, { status: 400 });
   }
   const settings = await load();
   settings.orderly.url = orderlyUrl;
+  settings.orderly.hookSecret = hookSecret;
   settings.dops.enabled = !!body.dopsEnabled;
   settings.dops.webhook = dopsWebhook;
   settings.webhook = webhook;

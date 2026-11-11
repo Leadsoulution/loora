@@ -28,6 +28,9 @@ export type Order = {
   extra?: { label: string; value: string }[];
   /** Note interne (dashboard) */
   note?: string;
+  /** Statut de confirmation et de livraison tels qu'Orderly les a renvoyés (api/orderly-hook.php) */
+  orderlyStatus?: string;
+  orderlyDelivery?: string;
   updatedAt?: string;
 };
 

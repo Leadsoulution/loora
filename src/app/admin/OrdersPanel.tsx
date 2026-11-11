@@ -285,19 +285,26 @@ function OrderRow({
 
         <p className="font-medium tabular-nums">{o.total} DH</p>
 
-        <select
-          value={o.status}
-          onChange={(e) => onStatus(e.target.value as OrderStatus)}
-          className="rounded-lg border px-2 py-1.5 text-[13px] font-medium outline-none"
-          style={{ borderColor: `${status.color}55`, color: status.color, background: `${status.color}10` }}
-          aria-label="Statut"
-        >
-          {ORDER_STATUSES.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </select>
+        <div className="min-w-0">
+          <select
+            value={o.status}
+            onChange={(e) => onStatus(e.target.value as OrderStatus)}
+            className="w-full rounded-lg border px-2 py-1.5 text-[13px] font-medium outline-none"
+            style={{ borderColor: `${status.color}55`, color: status.color, background: `${status.color}10` }}
+            aria-label="Statut"
+          >
+            {ORDER_STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+          {(o.orderlyStatus || o.orderlyDelivery) && (
+            <p className="mt-1 truncate text-[11px] text-muted" title="Statut dans Orderly">
+              Orderly : {[o.orderlyStatus, o.orderlyDelivery].filter(Boolean).join(" · ")}
+            </p>
+          )}
+        </div>
 
         <button
           type="button"

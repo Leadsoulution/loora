@@ -219,7 +219,8 @@ function default_settings()
 {
     return [
         // Orderly (dops) par « formulaire web » : chaque commande est envoyée à son adresse (clé incluse)
-        'orderly' => ['url' => '', 'lastSuccess' => '', 'lastError' => ''],
+        // et en retour Orderly prévient LOORA de chaque changement de statut (api/orderly-hook.php)
+        'orderly' => ['url' => '', 'lastSuccess' => '', 'lastError' => '', 'hookSecret' => '', 'hookLast' => '', 'hookError' => ''],
         // Ancienne méthode : dops lit les commandes comme une boutique WooCommerce (api/wc.php)
         'dops' => ['enabled' => false, 'key' => '', 'secret' => '', 'webhook' => '', 'lastSuccess' => '', 'lastError' => ''],
         // Autre application : reçoit chaque commande en JSON

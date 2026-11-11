@@ -20,6 +20,7 @@ function formatStatus(value: string) {
 export function IntegrationsPanel() {
   const [saved, setSaved] = useState<Integrations | null>(null);
   const [orderlyUrl, setOrderlyUrl] = useState("");
+  const [hookSecret, setHookSecret] = useState("");
   const [dopsEnabled, setDopsEnabled] = useState(false);
   const [dopsWebhook, setDopsWebhook] = useState("");
   const [webhook, setWebhook] = useState("");
@@ -29,6 +30,7 @@ export function IntegrationsPanel() {
   function apply(settings: Integrations) {
     setSaved(settings);
     setOrderlyUrl(settings.orderly.url);
+    setHookSecret(settings.orderly.hookSecret);
     setDopsEnabled(settings.dops.enabled);
     setDopsWebhook(settings.dops.webhook);
     setWebhook(settings.webhook);
@@ -58,7 +60,7 @@ export function IntegrationsPanel() {
   }
 
   async function save() {
-    const data = await call("save", { method: "PUT", body: JSON.stringify({ orderlyUrl, dopsEnabled, dopsWebhook, webhook }) });
+    const data = await call("save", { method: "PUT", body: JSON.stringify({ orderlyUrl, orderlyHookSecret: hookSecret, dopsEnabled, dopsWebhook, webhook }) });
     if (data) {
       apply(data);
       setNotice({ ok: true, text: "Connexions enregistrées ✓" });
@@ -99,6 +101,7 @@ export function IntegrationsPanel() {
 
   const dirty =
     orderlyUrl !== saved.orderly.url ||
+    hookSecret !== saved.orderly.hookSecret ||
     dopsEnabled !== saved.dops.enabled || dopsWebhook !== saved.dops.webhook || webhook !== saved.webhook;
   const site = typeof window === "undefined" ? "" : window.location.origin;
 
@@ -140,6 +143,27 @@ export function IntegrationsPanel() {
             double dans Orderly.
           </p>
         )}
+
+        <div className="space-y-3 rounded-lg border border-ink/10 bg-bone/30 p-4">
+          <div>
+            <p className="text-[13px] font-medium">Retour des statuts : Orderly → LOORA</p>
+            <p className="mt-0.5 text-[12px] text-muted">
+              Quand vous changez le statut d&apos;une commande dans Orderly (confirmée, annulée, livrée…), il change aussi
+              ici, dans Commandes.
+            </p>
+          </div>
+          <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted">
+            1. Dans Orderly → Paramètres → Webhooks, ajoutez cette adresse :
+          </p>
+          <CopyRow label="Adresse du webhook" value={`${site}/api/orderly-hook`} />
+          <Field
+            label="2. Collez ici le secret affiché par Orderly"
+            hint="Il commence par whsec_. Il prouve que les statuts viennent bien de votre Orderly. Vide = désactivé."
+          >
+            <Input value={hookSecret} onChange={(v) => setHookSecret(v.trim())} placeholder="whsec_…" />
+          </Field>
+          <HookStatus last={saved.orderly.hookLast} error={saved.orderly.hookError} />
+        </div>
       </section>
 
       {/* ------------------------------------------------ dops : ancienne méthode WooCommerce */}
@@ -231,6 +255,17 @@ export function IntegrationsPanel() {
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Dernier statut reçu d'Orderly / dernière erreur */
+function HookStatus({ last, error }: { last: string; error: string }) {
+  if (!last && !error) return null;
+  return (
+    <div className="space-y-1 text-[12px]">
+      {last && <p className="text-[#2f855a]">✓ Dernier statut reçu : {formatStatus(last)}</p>}
+      {error && <p className="text-[#a8322a]">✕ Dernière erreur : {formatStatus(error)}</p>}
     </div>
   );
 }
