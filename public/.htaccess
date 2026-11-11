@@ -35,8 +35,8 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 <IfModule mod_headers.c>
-  # Fichiers JS/CSS de Next.js : noms uniques, cache long
-  <FilesMatch "\.(js|css|woff2)$">
+  # Fichiers JS/CSS de Next.js et photos (uploads) : noms uniques, cache long
+  <FilesMatch "\.(js|css|woff2|webp)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 </IfModule>
