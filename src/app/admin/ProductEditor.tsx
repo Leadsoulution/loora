@@ -103,17 +103,20 @@ function InfosTab({
       <Card title="Produit dans Orderly">
         <div className="grid grid-cols-2 gap-4">
           <Field
+            label="Code article (SKU)"
+            hint="Le code du produit dans Orderly (ex. 1FKN0G) : Orderly y retrouve le produit, sa photo et son stock."
+          >
+            <Input value={value.sku} placeholder="Ex. : 1FKN0G" onChange={(v) => set("sku", v.replace(/[^\w.-]/g, ""))} />
+          </Field>
+          <Field
             label="Nom du produit dans Orderly"
-            hint="Écrit exactement comme dans Orderly → Produits : c'est ce nom qui relie la commande au produit et à son stock."
+            hint="Utilisé seulement si le code article est vide ou inconnu d'Orderly : écrit exactement comme dans Orderly → Produits."
           >
             <Input
               value={value.orderlyName}
               placeholder={`Vide = ${[value.type, value.name].filter(Boolean).join(" ")}`}
               onChange={(v) => set("orderlyName", v.replace(/,/g, " "))}
             />
-          </Field>
-          <Field label="Code article (SKU)" hint="Pour vos repères et la méthode WooCommerce. Vide = identifiant de la page.">
-            <Input value={value.sku} placeholder="Ex. : LOR-ARJ" onChange={(v) => set("sku", v.replace(/[^\w.-]/g, ""))} />
           </Field>
         </div>
         <p className="text-[12px] text-muted">La quantité commandée (1, 2 ou 3 selon l&apos;offre) est envoyée avec chaque commande.</p>
