@@ -61,6 +61,10 @@ export async function PUT(request: Request) {
   }
   const settings = await load();
   settings.orderly.url = orderlyUrl;
+  if (hookSecret !== settings.orderly.hookSecret) {
+    settings.orderly.hookLast = "";
+    settings.orderly.hookError = "";
+  }
   settings.orderly.hookSecret = hookSecret;
   settings.dops.enabled = !!body.dopsEnabled;
   settings.dops.webhook = dopsWebhook;
