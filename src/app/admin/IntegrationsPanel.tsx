@@ -113,7 +113,7 @@ export function IntegrationsPanel() {
           <h2 className="font-display text-2xl">Orderly — formulaire web</h2>
           <p className="mt-0.5 text-[13px] text-muted">
             Chaque commande du site part toute seule dans Orderly, envoyée par le serveur LOORA : nom, téléphone, ville,
-            adresse, produit, quantité, montant, et en note l&apos;offre et le code article.
+            adresse, produit, quantité et montant. La note reste vide pour votre service de confirmation.
           </p>
         </div>
         <Field

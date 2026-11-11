@@ -112,7 +112,7 @@ function InfosTab({
               onChange={(v) => set("orderlyName", v.replace(/,/g, " "))}
             />
           </Field>
-          <Field label="Code article (SKU)" hint="Envoyé dans la note de la commande. Vide = identifiant de la page.">
+          <Field label="Code article (SKU)" hint="Pour vos repères et la méthode WooCommerce. Vide = identifiant de la page.">
             <Input value={value.sku} placeholder="Ex. : LOR-ARJ" onChange={(v) => set("sku", v.replace(/[^\w.-]/g, ""))} />
           </Field>
         </div>
