@@ -13,8 +13,6 @@ export default function config(phase: string): NextConfig {
     pageExtensions: dev ? ["tsx", "ts", "dev.ts"] : ["tsx", "ts"],
     experimental: {
       agentFeedback: true,
-      // CSS dans la page : rien à attendre avant l'affichage (visiteurs venus des pubs = première visite)
-      inlineCss: true,
     },
     turbopack: {
       rules: {
