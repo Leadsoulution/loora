@@ -535,6 +535,10 @@
   .md-story { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .md-gallery { position: static; }
   .md-story--flip .md-story-pic { order: 0; }
+  /* Sur téléphone : toutes les photos des histoires en carré (1:1), animations comprises */
+  .md-story-pic { aspect-ratio: 1 / 1; }
+  .md-story-pic img,
+  .md-story-pic svg { height: 100%; }
   .md-dial-orb { width: min(78%, 300px); order: -1; }
   .md-dial { padding: 48px 0; }
   .md-cards,
