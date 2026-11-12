@@ -40,6 +40,7 @@ export const PRODUCTS: Product[] = [
   { slug: "collier-lune-dor", name: "Lune d'Or", category: "colliers", metal: "or", stone: "perle", price: 340, compareAt: 450 },
   { slug: "boucles-goutte", name: "Goutte", category: "boucles", metal: "or", stone: "rubis", price: 310, compareAt: 420 },
   { slug: "magic-heart", name: "Magic Heart", category: "colliers", metal: "argent", stone: "none", price: 199, compareAt: 299 },
+  { slug: "snlmen", name: "Onyx Men", category: "colliers", metal: "argent", stone: "onyx", price: 199, compareAt: 299 },
 ];
 
 export const RING_SIZES = [48, 50, 52, 54, 56, 58];
