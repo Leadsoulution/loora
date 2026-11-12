@@ -34,11 +34,12 @@ export const METAL_LABEL: Record<Metal, string> = {
   rose: "Acier inoxydable or rose",
 };
 
-/** Les 3 produits du site. Textes, prix et photos se modifient dans le dashboard (/admin). */
+/** Les produits du site. Textes, prix et photos se modifient dans le dashboard (/admin). */
 export const PRODUCTS: Product[] = [
   { slug: "bague-aube", name: "Aube", category: "bagues", metal: "or", stone: "saphir", price: 420, compareAt: 590 },
   { slug: "collier-lune-dor", name: "Lune d'Or", category: "colliers", metal: "or", stone: "perle", price: 340, compareAt: 450 },
   { slug: "boucles-goutte", name: "Goutte", category: "boucles", metal: "or", stone: "rubis", price: 310, compareAt: 420 },
+  { slug: "magic-heart", name: "Magic Heart", category: "colliers", metal: "argent", stone: "none", price: 199, compareAt: 299 },
 ];
 
 export const RING_SIZES = [48, 50, 52, 54, 56, 58];

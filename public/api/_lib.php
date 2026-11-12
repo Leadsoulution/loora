@@ -10,7 +10,7 @@ if (!defined('LOORA')) {
 require __DIR__ . '/config.php';
 
 /** Les 3 produits du site (voir src/lib/products.ts) */
-const LOORA_PRODUCTS = ['bague-aube', 'collier-lune-dor', 'boucles-goutte'];
+const LOORA_PRODUCTS = ['bague-aube', 'collier-lune-dor', 'boucles-goutte', 'magic-heart'];
 
 const METAL_LABEL = [
     'or' => 'Acier inoxydable doré',

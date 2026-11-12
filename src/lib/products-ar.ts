@@ -42,6 +42,10 @@ export const PRODUCT_AR: Record<string, { tagline: string; description: string }
     tagline: "تتألق مع كل حركة",
     description: "قرطان على شكل قطرة من الياقوت الأحمر يتمايلان برقّة. لمسة من اللون الأحمر العميق لإطلالة ساحرة.",
   },
+  "magic-heart": {
+    tagline: "يتغيّر لونه مع حرارتكِ",
+    description: "قلب لامع على سلسلة فضية، يتبدّل لونه بين الأزرق والوردي والأخضر والبنفسجي حسب حرارة جسمكِ والجو من حولكِ.",
+  },
 };
 
 export const FAQ_AR = [

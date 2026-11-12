@@ -180,11 +180,16 @@ export type ProductContent = {
   orderlyName: string;
 };
 
-export type ProductDesign = "classic" | "rose";
+export type ProductDesign = "classic" | "rose" | "mood";
 
 export const PRODUCT_DESIGNS: { value: ProductDesign; label: string; hint: string }[] = [
   { value: "classic", label: "Classique", hint: "Fiche LOORA aux couleurs du thème" },
   { value: "rose", label: "Violet « Princesse »", hint: "Page violette : galerie, offres, histoires en photos, FAQ" },
+  {
+    value: "mood",
+    label: "Nuit « Humeur »",
+    hint: "Page sombre aux reflets changeants, avec un sélecteur de température : pour les bijoux qui changent de couleur",
+  },
 ];
 
 export const MAX_OFFERS = 6;
@@ -610,7 +615,7 @@ export function cleanStore(raw: unknown): Store {
       fields: cleanFields(p.fields),
       sticky: cleanSticky(p.sticky),
       sections: Array.isArray(p.sections) ? p.sections.slice(0, 20).map(cleanSection) : base.sections,
-      design: p.design === "rose" ? "rose" : "classic",
+      design: pick<ProductDesign>(p.design, ["classic", "rose", "mood"], "classic"),
       sku: str(p.sku, 40).replace(/[^\w.-]/g, ""),
       // Une virgule couperait le produit en deux lignes dans Orderly
       orderlyName: str(p.orderlyName, 120).replace(/[\s,]+/g, " ").trim(),
