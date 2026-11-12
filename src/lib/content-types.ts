@@ -180,7 +180,7 @@ export type ProductContent = {
   orderlyName: string;
 };
 
-export type ProductDesign = "classic" | "rose" | "mood" | "onyx";
+export type ProductDesign = "classic" | "rose" | "mood" | "onyx" | "luxe";
 
 export const PRODUCT_DESIGNS: { value: ProductDesign; label: string; hint: string }[] = [
   { value: "classic", label: "Classique", hint: "Fiche LOORA aux couleurs du thème" },
@@ -191,6 +191,7 @@ export const PRODUCT_DESIGNS: { value: ProductDesign; label: string; hint: strin
     hint: "Page sombre aux reflets changeants, avec un sélecteur de température : pour les bijoux qui changent de couleur",
   },
   { value: "onyx", label: "Noir « Onyx »", hint: "Page noir et argent, style magazine homme : offres en tableau, lookbook qui défile" },
+  { value: "luxe", label: "Luxe clair", hint: "Page ivoire, noir et or, style boutique de luxe : galerie à glisser, offres élégantes" },
 ];
 
 export const MAX_OFFERS = 6;
@@ -616,7 +617,7 @@ export function cleanStore(raw: unknown): Store {
       fields: cleanFields(p.fields),
       sticky: cleanSticky(p.sticky),
       sections: Array.isArray(p.sections) ? p.sections.slice(0, 20).map(cleanSection) : base.sections,
-      design: pick<ProductDesign>(p.design, ["classic", "rose", "mood", "onyx"], "classic"),
+      design: pick<ProductDesign>(p.design, ["classic", "rose", "mood", "onyx", "luxe"], "classic"),
       sku: str(p.sku, 40).replace(/[^\w.-]/g, ""),
       // Une virgule couperait le produit en deux lignes dans Orderly
       orderlyName: str(p.orderlyName, 120).replace(/[\s,]+/g, " ").trim(),

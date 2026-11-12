@@ -7,6 +7,7 @@ import { getProduct, type Product } from "@/lib/products";
 import { useStore } from "@/lib/use-store";
 import { ProductView } from "./ProductView";
 import { MoodView } from "./mood/MoodView";
+import { LuxeView } from "./luxe/LuxeView";
 import { OnyxView } from "./onyx/OnyxView";
 import { RoseView } from "./rose/RoseView";
 
@@ -41,6 +42,7 @@ export function ProductPage({ slug, initial }: { slug: string; initial?: Product
 
 /** Corps de la fiche selon le design choisi dans le dashboard */
 export function ProductBody({ product, content, theme }: { product: Product; content: ProductContent; theme: Theme }) {
+  if (content.design === "luxe") return <LuxeView product={product} content={content} />;
   if (content.design === "onyx") return <OnyxView product={product} content={content} />;
   if (content.design === "mood") return <MoodView product={product} content={content} />;
   return content.design === "rose" ? (
