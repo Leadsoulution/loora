@@ -1,8 +1,8 @@
 :HL["/_next/static/chunks/3-c_vbb9u2op_.css","style"]
 :HL["/_next/static/media/4fb4363ca5982ca4-s.p.40_3w74kn95bo.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-:HL["/_next/static/chunks/36noshjs9_bg3.css","style"]
+:HL["/_next/static/chunks/24vdiwy5jc_q1.css","style"]
 4:[["children",{"s":"__PAGE__","h":160}]]
 3:[["children",{"s":{"n":"slug","t":"d","k":"bague-aube","s":[]},"h":65632,"c":"$Q4"}]]
 2:[["children",{"s":"produit","h":131168,"c":"$Q3"}]]
 1:[["children",{"s":"(site)","h":131168,"c":"$Q2"}]]
-0:{"b":"06a5d69ab8a0fbc1528a551ffd5ccecb8fd4975e","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}
+0:{"b":"c56392dfe88fe4e30d049d1cf6a71ae007ef7473","t":{"t":{"s":"","h":131152,"c":"$Q1"}}}
