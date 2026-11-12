@@ -128,36 +128,43 @@
 .ox-offer-price b { font-size: 17px; }
 .ox-offer-price s { font-size: 12px; color: var(--ox-muted); }
 
-/* Formulaire */
-.ox-form-box { border: 1px solid #d9dbe0; background: var(--ox-coal); }
-.ox-form-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 14px 18px; background: #f1f2f4; color: #0a0a0b; font-weight: 700; font-size: 15px; }
-.ox-form-head b { white-space: nowrap; }
-.ox-form { display: grid; gap: 14px; padding: 18px; }
-.ox-field { display: grid; gap: 2px; }
-.ox-field label { font-size: 12px; font-weight: 700; color: var(--ox-muted); }
+/* Formulaire : carte claire qui se détache sur le fond noir */
+.ox-form-box {
+  background: #f4f4f6;
+  color: #0a0a0b;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 24px 50px rgba(0, 0, 0, 0.55);
+}
+.ox-form-head { text-align: center; padding: 20px 18px 14px; background: #fff; border-bottom: 1px solid #e3e3e8; }
+.onyx-page .ox-form-head h2 { font-size: 21px; line-height: 1.5; }
+.ox-form-head p { font-size: 14px; color: #5f5f68; margin-top: 2px; }
+.ox-form-head b { color: #0a0a0b; font-size: 17px; white-space: nowrap; }
+.ox-form { display: grid; gap: 12px; padding: 18px; }
+.ox-field { display: grid; gap: 5px; }
+.ox-field label { font-size: 13px; font-weight: 700; color: #33333a; }
 .ox-field input,
 .ox-field textarea {
   width: 100%;
   font-size: 16px;
-  color: var(--ox-text);
-  background: transparent;
-  border: none;
-  border-bottom: 1.5px solid var(--ox-line);
-  border-radius: 0;
-  padding: 10px 2px;
+  color: #0a0a0b;
+  background: #fff;
+  border: 1.5px solid #d6d6dd;
+  border-radius: 8px;
+  padding: 13px 14px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .ox-field input::placeholder,
-.ox-field textarea::placeholder { color: #5d5d64; }
+.ox-field textarea::placeholder { color: #a3a3ad; }
 .ox-field input:focus,
-.ox-field textarea:focus { border-bottom-color: #fff; }
+.ox-field textarea:focus { border-color: #0a0a0b; box-shadow: 0 0 0 3px rgba(10, 10, 11, 0.1); }
 .ox-field input[dir="ltr"] { text-align: right; }
-.onyx-page .ox-invalid { border-bottom-color: #ff6b6b; }
-.ox-err { color: #ff8a8a; font-size: 13px; font-weight: 700; margin-top: 4px; }
-.ox-sizes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.onyx-page .ox-sizes button { min-width: 46px; padding: 8px 10px; border: 1px solid var(--ox-line); font-weight: 700; }
-.onyx-page .ox-sizes button.on { border-color: #fff; background: var(--ox-coal-2); }
+.onyx-page .ox-invalid { border-color: #d93636; }
+.ox-err { color: #c62828; font-size: 13px; font-weight: 700; }
+.ox-sizes { display: flex; flex-wrap: wrap; gap: 6px; }
+.onyx-page .ox-sizes button { min-width: 46px; padding: 8px 10px; border-radius: 8px; border: 1.5px solid #d6d6dd; background: #fff; font-weight: 700; }
+.onyx-page .ox-sizes button.on { border-color: #0a0a0b; background: #0a0a0b; color: #fff; }
 .ox-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .onyx-page .ox-submit {
   position: relative;
@@ -165,14 +172,15 @@
   width: 100%;
   margin-top: 6px;
   padding: 17px;
-  background: var(--ox-silver);
-  color: #0a0a0b;
+  border-radius: 8px;
+  background: #0a0a0b;
+  color: #fff;
   font-size: 18px;
   font-weight: 700;
   text-align: center;
-  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
 }
-/* Reflet qui balaie le bouton, comme la lumière sur l'acier */
+/* Reflet argenté qui balaie le bouton, comme la lumière sur l'acier */
 .onyx-page .ox-submit::after {
   content: "";
   position: absolute;
@@ -180,14 +188,14 @@
   bottom: 0;
   width: 40%;
   left: -50%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.28), transparent);
   animation: ox-shine 3.2s ease-in-out infinite;
 }
 @keyframes ox-shine { 60%, 100% { left: 120%; } }
 .ox-submit span { position: relative; z-index: 1; }
 .onyx-page .ox-submit:disabled { opacity: 0.7; }
-.ox-trust { list-style: none; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ox-muted); }
-.ox-trust li::before { content: "✓ "; color: var(--ox-steel); }
+.ox-trust { list-style: none; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: #5f5f68; }
+.ox-trust li::before { content: "✓ "; color: #0a0a0b; font-weight: 700; }
 
 /* ============ Sections ============ */
 .ox-sec { padding: 72px 0; border-top: 1px solid var(--ox-line); }

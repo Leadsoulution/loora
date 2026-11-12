@@ -192,8 +192,10 @@ function OnyxOrderForm({
   return (
     <div className="ox-form-box" id="oxOrder">
       <div className="ox-form-head">
-        <span>{FORM_TITLE}</span>
-        <b>{dh(total)}</b>
+        <h2>{FORM_TITLE}</h2>
+        <p>
+          المجموع : <b>{dh(total)}</b>
+        </p>
       </div>
       <form className="ox-form" onSubmit={form.submit} noValidate>
         {content.sizes.length > 0 && (
