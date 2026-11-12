@@ -12,7 +12,6 @@ import "./onyx.css";
 // Design « Onyx » (noir et argent, style magazine homme).
 // Textes, offres, photos et sections viennent du dashboard ; seuls ces textes fixes appartiennent au design.
 const WORDMARK = "LOORA MEN";
-const TOP_NOTE = "توصيل مجاني لكل المدن · الدفع عند الاستلام";
 const FORM_TITLE = "اطلب دابا، وخلّص فاش توصلك";
 const SUBMIT = "تأكيد الطلب";
 const TRUST = ["الدفع عند الاستلام", "توصيل مجاني", "علبة هدية"];
@@ -50,11 +49,6 @@ export function OnyxView({ product, content }: { product: Product; content: Prod
 
   return (
     <div className={`onyx-page ${kufi.variable} ${plex.variable}`} dir="rtl" lang="ar">
-      <div className="ox-top">
-        <b>{WORDMARK}</b>
-        <span>{TOP_NOTE}</span>
-      </div>
-
       {/* ============ Galerie + achat ============ */}
       <section className="ox-hero">
         <div className="ox-wrap ox-hero-grid">
@@ -110,35 +104,35 @@ export function OnyxView({ product, content }: { product: Product; content: Prod
               </ol>
             )}
 
-            <div className="ox-offers" role="radiogroup">
-              {offers.map((o) => {
-                const was = o.qty * content.price;
-                return (
-                  <button
-                    key={o.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={o.id === offer.id}
-                    className={`ox-offer ${o.id === offer.id ? "on" : ""}`}
-                    onClick={() => setOfferId(o.id)}
-                  >
-                    <span className="ox-radio" />
-                    <span className="ox-offer-qty">×{o.qty}</span>
-                    <span className="ox-offer-txt">
-                      <b>{o.label}</b>
-                      {o.tag && <i>{o.tag}</i>}
-                      {o.note && <small>{o.note}</small>}
-                    </span>
-                    <span className="ox-offer-price">
-                      <b>{dh(o.price)}</b>
-                      {o.qty > 1 && was > o.price && <s>{dh(was)}</s>}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <OnyxOrderForm product={product} content={content} offerId={offer.id} total={offer.price} />
+            <OnyxOrderForm product={product} content={content} offerId={offer.id} total={offer.price}>
+              <div className="ox-offers" role="radiogroup">
+                {offers.map((o) => {
+                  const was = o.qty * content.price;
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={o.id === offer.id}
+                      className={`ox-offer ${o.id === offer.id ? "on" : ""}`}
+                      onClick={() => setOfferId(o.id)}
+                    >
+                      <span className="ox-radio" />
+                      <span className="ox-offer-qty">×{o.qty}</span>
+                      <span className="ox-offer-txt">
+                        <b>{o.label}</b>
+                        {o.tag && <i>{o.tag}</i>}
+                        {o.note && <small>{o.note}</small>}
+                      </span>
+                      <span className="ox-offer-price">
+                        <b>{dh(o.price)}</b>
+                        {o.qty > 1 && was > o.price && <s>{dh(was)}</s>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </OnyxOrderForm>
           </div>
         </div>
       </section>
@@ -180,11 +174,14 @@ function OnyxOrderForm({
   content,
   offerId,
   total,
+  children,
 }: {
   product: Product;
   content: ProductContent;
   offerId: string;
   total: number;
+  /** Choix de l'offre, affiché en tête du formulaire */
+  children: React.ReactNode;
 }) {
   const form = useOrderForm(product, content, offerId);
   const { errors } = form;
@@ -198,6 +195,8 @@ function OnyxOrderForm({
         </p>
       </div>
       <form className="ox-form" onSubmit={form.submit} noValidate>
+        <p className="ox-form-label">اختار العرض ديالك</p>
+        {children}
         {content.sizes.length > 0 && (
           <div className="ox-field">
             <label>{content.sizeTitle}</label>
