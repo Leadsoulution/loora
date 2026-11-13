@@ -8,6 +8,7 @@ import { CATEGORY_LABEL, formatPrice, PRODUCTS } from "@/lib/products";
 import type { PreviewTarget } from "./apercu/LivePreview";
 import { IntegrationsPanel } from "./IntegrationsPanel";
 import { OrdersPanel } from "./OrdersPanel";
+import { PixelsPanel } from "./PixelsPanel";
 import { Preview } from "./Preview";
 import { ProductEditor } from "./ProductEditor";
 import { LogoEditor } from "./LogoEditor";
@@ -19,7 +20,8 @@ type View =
   | { page: "products" }
   | { page: "edit"; slug: string }
   | { page: "theme" }
-  | { page: "integrations" };
+  | { page: "integrations" }
+  | { page: "pixels" };
 
 const THEME_PREVIEWS: { label: string; target: PreviewTarget }[] = PRODUCTS.map((p) => ({
   label: p.name,
@@ -137,6 +139,9 @@ export function AdminApp() {
             <NavButton active={view.page === "theme"} onClick={() => navigate({ page: "theme" })}>
               Logo & couleurs
             </NavButton>
+            <NavButton active={view.page === "pixels"} onClick={() => navigate({ page: "pixels" })}>
+              Pixels
+            </NavButton>
             <NavButton active={view.page === "integrations"} onClick={() => navigate({ page: "integrations" })}>
               Connexions
             </NavButton>
@@ -155,6 +160,7 @@ export function AdminApp() {
       <div className="mx-auto max-w-[1600px] px-4 pb-32 pt-6 sm:px-6">
         {view.page === "orders" && <OrdersPanel onPending={onPending} />}
         {view.page === "integrations" && <IntegrationsPanel />}
+        {view.page === "pixels" && <PixelsPanel pixels={draft.pixels} onChange={(pixels) => setDraft({ ...draft, pixels })} />}
         {view.page === "products" && <ProductList store={draft} onEdit={(slug) => navigate({ page: "edit", slug })} />}
 
         {(view.page === "theme" || editing) && (

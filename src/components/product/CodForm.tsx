@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Media } from "@/components/Media";
 import { PHONE_FIELD_ID, type FormField, type ProductContent } from "@/lib/content-types";
 import { fieldMaxLength, validateOrder, type OrderErrors, type OrderInput } from "@/lib/order";
+import { rememberOrder } from "@/lib/pixel-events";
 import { formatDh, type Product } from "@/lib/products";
 import { Icon } from "./Icon";
 
@@ -76,6 +77,12 @@ export function CodForm({
       }
       setDone({ ref: data.ref, total: data.total });
       // Page de remerciement (le message ci-dessous reste affiché pendant le chargement)
+      rememberOrder(data.ref, {
+        id: content.sku || product.slug,
+        name: `${content.type} ${content.name}`,
+        value: offer.price,
+        quantity: offer.qty,
+      });
       router.push(`/merci/?ref=${encodeURIComponent(data.ref)}`);
     } catch {
       setErrors({ form: "تعذّر الاتصال. تحقّق من الإنترنت وحاول مرة أخرى." });

@@ -21,6 +21,6 @@ export async function generateMetadata({ params }: PageProps<"/produit/[slug]">)
 export default async function Page({ params }: PageProps<"/produit/[slug]">) {
   const { slug } = await params;
   if (!getProduct(slug)) notFound();
-  const { logo, theme, products } = await getPageStore();
-  return <ProductPage slug={slug} initial={{ logo, theme, content: products[slug] }} />;
+  const { logo, theme, products, pixels } = await getPageStore();
+  return <ProductPage slug={slug} initial={{ logo, theme, content: products[slug], pixels }} />;
 }

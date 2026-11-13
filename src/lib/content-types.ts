@@ -3,6 +3,7 @@
 
 import { OFFERS, offerTotal, PRODUCTS, RING_SIZES, type Product } from "./products";
 import { CATEGORY_AR, FAQ_AR, METAL_AR, PRODUCT_AR, STONE_AR } from "./products-ar";
+import { cleanPixels, type Pixels } from "./pixels";
 
 export type Theme = {
   accent: string;
@@ -255,6 +256,8 @@ export type Store = {
   logo: Logo;
   theme: Theme;
   products: Record<string, ProductContent>;
+  /** Pixels publicitaires (Meta, TikTok) de tout le site */
+  pixels: Pixels;
 };
 
 export const DEFAULT_THEME: Theme = {
@@ -624,5 +627,5 @@ export function cleanStore(raw: unknown): Store {
     };
   }
   const logo = cleanLogo(input.logo ?? {});
-  return { logo, theme, products };
+  return { logo, theme, products, pixels: cleanPixels((input as { pixels?: unknown }).pixels) };
 }

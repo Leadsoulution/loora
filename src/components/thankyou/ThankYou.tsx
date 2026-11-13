@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { startPixels, trackPurchase } from "@/lib/pixel-events";
+import { useStore } from "@/lib/use-store";
 import "./thankyou.css";
 
 /** Numéro WhatsApp de la boutique, au format international (212…, sans + ni 0 au début) */
@@ -16,6 +18,14 @@ export function ThankYou() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- paramètre lu dans l'adresse, après l'affichage
     setRef(/^LO-[A-Z0-9]+$/.test(value) ? value : "");
   }, []);
+
+  // Pixels : visite de la page merci et achat (une fois par commande)
+  const store = useStore();
+  useEffect(() => {
+    if (!store) return;
+    startPixels(store.pixels);
+    if (ref) trackPurchase(ref);
+  }, [store, ref]);
 
   const text = ref ? `${MESSAGE}\nرقم الطلب: ${ref}` : MESSAGE;
   const whatsapp = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;

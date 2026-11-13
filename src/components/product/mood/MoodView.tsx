@@ -7,6 +7,7 @@ import { Media } from "@/components/Media";
 import { PHONE_FIELD_ID, type FormField, type ProductContent, type Section } from "@/lib/content-types";
 import { fieldMaxLength, validateOrder, type OrderErrors, type OrderInput } from "@/lib/order";
 import { normalizePhone } from "@/lib/phone";
+import { rememberOrder } from "@/lib/pixel-events";
 import type { Product } from "@/lib/products";
 import "./mood.css";
 
@@ -335,6 +336,13 @@ function MoodOrderForm({
         setSending(false);
         return;
       }
+      const offer = content.offers.find((o) => o.id === offerId) ?? content.offers[0];
+      rememberOrder(data.ref, {
+        id: content.sku || product.slug,
+        name: `${content.type} ${content.name}`,
+        value: offer.price,
+        quantity: offer.qty,
+      });
       router.push(`/merci/?ref=${encodeURIComponent(data.ref)}`);
     } catch {
       setErrors({ form: "وقع خطأ في الاتصال، المرجو المحاولة مرة أخرى." });

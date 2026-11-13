@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { LogoHeader } from "@/components/LogoHeader";
 import type { Logo, ProductContent, Theme } from "@/lib/content-types";
+import { startPixels, trackViewContent } from "@/lib/pixel-events";
+import type { Pixels } from "@/lib/pixels";
 import { getProduct, type Product } from "@/lib/products";
 import { useStore } from "@/lib/use-store";
 import { ProductView } from "./ProductView";
@@ -11,7 +13,7 @@ import { LuxeView } from "./luxe/LuxeView";
 import { OnyxView } from "./onyx/OnyxView";
 import { RoseView } from "./rose/RoseView";
 
-export type ProductPageData = { logo: Logo; theme: Theme; content: ProductContent };
+export type ProductPageData = { logo: Logo; theme: Theme; content: ProductContent; pixels: Pixels };
 
 /**
  * Fiche produit complète (en-tête + fiche).
@@ -21,12 +23,21 @@ export type ProductPageData = { logo: Logo; theme: Theme; content: ProductConten
 export function ProductPage({ slug, initial }: { slug: string; initial?: ProductPageData }) {
   const store = useStore(!initial);
   const product = getProduct(slug);
-  const data = initial ?? (store && { logo: store.logo, theme: store.theme, content: store.products[slug] });
+  const data = initial ?? (store && { logo: store.logo, theme: store.theme, content: store.products[slug], pixels: store.pixels });
 
   const title = data?.content && `${data.content.type} ${data.content.name} · LOORA`;
   useEffect(() => {
     if (title) document.title = title;
   }, [title]);
+
+  // Pixels publicitaires : visite de la page puis consultation du produit
+  const content = data?.content;
+  const pixels = data?.pixels;
+  useEffect(() => {
+    if (!content || !pixels) return;
+    startPixels(pixels);
+    trackViewContent({ id: content.sku || slug, name: `${content.type} ${content.name}`, value: content.price, quantity: 1 });
+  }, [content, pixels, slug]);
 
   if (!data?.content || !product) return <div className="min-h-screen flex-1 bg-white" />;
 
