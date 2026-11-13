@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/order-status";
+import { Media } from "@/components/Media";
+import type { Store } from "@/lib/content-types";
 import type { Order } from "@/lib/orders";
+import { getProduct } from "@/lib/products";
 import { Button } from "./ui";
 
 const STATUS = Object.fromEntries(ORDER_STATUSES.map((s) => [s.value, s])) as Record<
@@ -40,7 +43,7 @@ function confirmMessage(o: Order) {
     .join("\n");
 }
 
-export function OrdersPanel({ onPending }: { onPending: (n: number) => void }) {
+export function OrdersPanel({ onPending, store }: { onPending: (n: number) => void; store: Store }) {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
@@ -187,6 +190,7 @@ export function OrdersPanel({ onPending }: { onPending: (n: number) => void }) {
               <OrderRow
                 key={o.ref}
                 order={o}
+                store={store}
                 open={openRef === o.ref}
                 onToggle={() => setOpenRef(openRef === o.ref ? null : o.ref)}
                 onStatus={(status) => patch(o.ref, { status })}
@@ -226,8 +230,31 @@ function Chip({
   );
 }
 
+/** Photo principale du produit commandé (première photo de sa page) */
+function ProductThumb({ order, store, size }: { order: Order; store: Store; size: number }) {
+  const product = getProduct(order.slug);
+  const src = store.products[order.slug]?.images[0];
+  return (
+    <span
+      className="block shrink-0 overflow-hidden rounded-lg border border-ink/10 bg-bone/40"
+      style={{ width: size, height: size }}
+    >
+      {product && src ? (
+        <Media
+          src={src}
+          art={{ category: product.category, metal: product.metal, stone: product.stone }}
+          alt={order.product}
+          thumb={size <= 64}
+          className="h-full w-full"
+        />
+      ) : null}
+    </span>
+  );
+}
+
 function OrderRow({
   order: o,
+  store,
   open,
   onToggle,
   onStatus,
@@ -235,6 +262,7 @@ function OrderRow({
   onDelete,
 }: {
   order: Order;
+  store: Store;
   open: boolean;
   onToggle: () => void;
   onStatus: (s: OrderStatus) => void;
@@ -272,14 +300,17 @@ function OrderRow({
           </a>
         </div>
 
-        <button type="button" onClick={onToggle} className="min-w-0 text-start text-[13px]">
-          <span className="block truncate">
-            {o.qty > 1 && <strong>{o.qty} × </strong>}
-            {o.product}
-          </span>
-          <span className="block truncate text-muted">
-            {o.metal}
-            {o.size ? ` · taille ${o.size}` : ""}
+        <button type="button" onClick={onToggle} className="flex min-w-0 items-center gap-2.5 text-start text-[13px]">
+          <ProductThumb order={o} store={store} size={44} />
+          <span className="min-w-0">
+            <span className="block truncate">
+              {o.qty > 1 && <strong>{o.qty} × </strong>}
+              {o.product}
+            </span>
+            <span className="block truncate text-muted">
+              {o.metal}
+              {o.size ? ` · taille ${o.size}` : ""}
+            </span>
           </span>
         </button>
 
@@ -334,7 +365,10 @@ function OrderRow({
           </div>
           <div className="text-[14px]">
             <p className="text-[11px] uppercase tracking-[0.12em] text-muted">Commande</p>
-            <p className="mt-1">
+            <div className="mt-2">
+              <ProductThumb order={o} store={store} size={120} />
+            </div>
+            <p className="mt-2">
               {o.qty} × {o.product} — {o.metal}
               {o.size ? `, taille ${o.size}` : ""}
             </p>

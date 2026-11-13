@@ -158,7 +158,7 @@ export function AdminApp() {
       </header>
 
       <div className="mx-auto max-w-[1600px] px-4 pb-32 pt-6 sm:px-6">
-        {view.page === "orders" && <OrdersPanel onPending={onPending} />}
+        {view.page === "orders" && saved && <OrdersPanel onPending={onPending} store={saved} />}
         {view.page === "integrations" && <IntegrationsPanel />}
         {view.page === "pixels" && <PixelsPanel pixels={draft.pixels} onChange={(pixels) => setDraft({ ...draft, pixels })} />}
         {view.page === "products" && <ProductList store={draft} onEdit={(slug) => navigate({ page: "edit", slug })} />}
