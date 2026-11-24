@@ -1,23 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { findMetaIds, findTiktokIds, MAX_PIXELS, type Pixels } from "@/lib/pixels";
+import { findPixelIds, MAX_PIXELS, type PixelKind, type Pixels } from "@/lib/pixels";
 import { Button, TextArea } from "./ui";
 
-type Kind = keyof Pixels;
-
-const KINDS: { kind: Kind; title: string; hint: string; find: (text: string) => string[] }[] = [
+const KINDS: { kind: PixelKind; title: string; hint: string }[] = [
   {
     kind: "meta",
     title: "Meta Pixel (Facebook / Instagram)",
-    hint: "Collez le code complet du pixel donné par Meta, ou seulement son numéro (ex. 1372971527357128).",
-    find: findMetaIds,
+    hint: "Collez le code complet donné par Meta, ou seulement le numéro du pixel (ex. 1372971527357128).",
   },
   {
     kind: "tiktok",
     title: "TikTok Pixel",
-    hint: "Collez le code complet du pixel donné par TikTok, ou seulement son identifiant (ex. C4ABCD1234EFGH5678).",
-    find: findTiktokIds,
+    hint: "Collez le code complet donné par TikTok, ou seulement l'identifiant (ex. C4ABCD1234EFGH5678).",
+  },
+  {
+    kind: "snap",
+    title: "Snap Pixel (Snapchat)",
+    hint: "Collez le code complet donné par Snapchat, ou seulement l'identifiant (ex. 4677f870-e000-4597-a073-abeea4dc3f23).",
+  },
+  {
+    kind: "google",
+    title: "Google (Analytics / Google Ads)",
+    hint: "Collez le code Google (gtag), ou seulement l'identifiant : G-XXXXXXX (Analytics), AW-XXXXXXX (Ads). Pour compter les commandes comme conversions Google Ads, ajoutez l'identifiant avec son étiquette : AW-XXXXXXX/AbCdEf.",
   },
 ];
 
@@ -32,7 +38,13 @@ export function PixelsPanel({ pixels, onChange }: { pixels: Pixels; onChange: (p
 
       <div className="mt-6 space-y-5">
         {KINDS.map((k) => (
-          <PixelCard key={k.kind} {...k} ids={pixels[k.kind]} onChange={(ids) => onChange({ ...pixels, [k.kind]: ids })} />
+          <PixelCard
+            key={k.kind}
+            {...k}
+            find={(text) => findPixelIds(k.kind, text)}
+            ids={pixels[k.kind]}
+            onChange={(ids) => onChange({ ...pixels, [k.kind]: ids })}
+          />
         ))}
 
         <section className="rounded-xl border border-ink/10 bg-white p-5 text-[13px] text-muted">
@@ -42,11 +54,13 @@ export function PixelsPanel({ pixels, onChange }: { pixels: Pixels; onChange: (p
               <b className="text-ink">PageView</b> : chaque visite d&apos;une page produit ou de la page merci.
             </li>
             <li>
-              <b className="text-ink">ViewContent</b> : consultation d&apos;un produit (code article, nom et prix).
+              <b className="text-ink">ViewContent</b> (Snapchat : VIEW_CONTENT, Google : view_item) : consultation d&apos;un
+              produit (code article, nom et prix).
             </li>
             <li>
-              <b className="text-ink">Purchase</b> (TikTok : CompletePayment) : commande envoyée, avec le montant de l&apos;offre
-              choisie en MAD et le nombre de pièces. Envoyé une seule fois par commande.
+              <b className="text-ink">Purchase</b> (TikTok : CompletePayment, Snapchat : PURCHASE, Google : purchase et
+              conversion Ads) : commande envoyée, avec le montant de l&apos;offre choisie en MAD, le nombre de pièces et le
+              numéro de commande. Envoyé une seule fois par commande.
             </li>
           </ul>
           <p className="mt-2">Les pixels se chargent juste après l&apos;affichage de la page : ils ne la ralentissent pas.</p>

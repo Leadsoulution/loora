@@ -9,6 +9,9 @@ declare global {
     _fbq?: any;
     ttq?: any;
     TiktokAnalyticsObject?: string;
+    snaptr?: any;
+    dataLayer?: unknown[];
+    gtag?: any;
   }
 }
 
@@ -21,6 +24,8 @@ export type PixelProduct = {
 };
 
 let started = false;
+/** Étiquettes de conversion Google Ads (AW-…/xxx) : l'achat leur est envoyé en plus */
+let googleConversions: string[] = [];
 
 function addScript(src: string) {
   const s = document.createElement("script");
@@ -95,12 +100,45 @@ export function startPixels(pixels: Pixels | undefined) {
     for (const id of pixels.tiktok) window.ttq.load(id);
     window.ttq.page();
   }
+  if (pixels.snap.length > 0) {
+    snapQueue();
+    // Pas d'e-mail : le formulaire de commande n'en demande pas
+    for (const id of pixels.snap) window.snaptr("init", id);
+    window.snaptr("track", "PAGE_VIEW");
+    whenIdle(() => addScript("https://sc-static.net/scevent.min.js"));
+  }
+  if (pixels.google.length > 0) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function gtag() {
+      // eslint-disable-next-line prefer-rest-params -- gtag attend l'objet arguments, comme dans le code officiel
+      window.dataLayer!.push(arguments);
+    };
+    window.gtag("js", new Date());
+    const tags = [...new Set(pixels.google.map((id) => id.split("/")[0]))];
+    for (const tag of tags) window.gtag("config", tag);
+    googleConversions = pixels.google.filter((id) => id.includes("/"));
+    whenIdle(() => addScript(`https://www.googletagmanager.com/gtag/js?id=${tags[0]}`));
+  }
 }
 
-/** Événement envoyé à tous les pixels démarrés */
-function send(meta: string, tiktok: string, p: PixelProduct) {
+/** File d'attente Snapchat (identique au code officiel) */
+function snapQueue() {
+  if (window.snaptr) return;
+  const a: any = function (...args: unknown[]) {
+    if (a.handleRequest) a.handleRequest(...args);
+    else a.queue.push(args);
+  };
+  a.queue = [];
+  window.snaptr = a;
+}
+
+type PixelEvent = "view" | "purchase";
+
+/** Événement envoyé à tous les pixels démarrés (ref = numéro de commande pour un achat) */
+function send(event: PixelEvent, p: PixelProduct, ref?: string) {
+  const purchase = event === "purchase";
   if (window.fbq) {
-    window.fbq("track", meta, {
+    window.fbq("track", purchase ? "Purchase" : "ViewContent", {
       content_ids: [p.id],
       content_name: p.name,
       content_type: "product",
@@ -110,17 +148,41 @@ function send(meta: string, tiktok: string, p: PixelProduct) {
     });
   }
   if (window.ttq) {
-    window.ttq.track(tiktok, {
+    window.ttq.track(purchase ? "CompletePayment" : "ViewContent", {
       contents: [{ content_id: p.id, content_name: p.name, quantity: p.quantity }],
       content_type: "product",
       value: p.value,
       currency: "MAD",
     });
   }
+  if (window.snaptr) {
+    window.snaptr("track", purchase ? "PURCHASE" : "VIEW_CONTENT", {
+      item_ids: [p.id],
+      item_category: p.name,
+      number_items: p.quantity,
+      price: p.value,
+      currency: "MAD",
+      ...(ref ? { transaction_id: ref } : {}),
+    });
+  }
+  if (window.gtag) {
+    const items = [{ item_id: p.id, item_name: p.name, quantity: p.quantity, price: Math.round(p.value / p.quantity) }];
+    window.gtag("event", purchase ? "purchase" : "view_item", {
+      currency: "MAD",
+      value: p.value,
+      items,
+      ...(ref ? { transaction_id: ref } : {}),
+    });
+    if (purchase) {
+      for (const sendTo of googleConversions) {
+        window.gtag("event", "conversion", { send_to: sendTo, value: p.value, currency: "MAD", transaction_id: ref });
+      }
+    }
+  }
 }
 
 /** Visite d'une page produit */
-export const trackViewContent = (p: PixelProduct) => send("ViewContent", "ViewContent", p);
+export const trackViewContent = (p: PixelProduct) => send("view", p);
 
 // ---------------------------------------------------------------- Commande → page merci
 
@@ -139,6 +201,6 @@ export function trackPurchase(ref: string) {
     const saved = JSON.parse(sessionStorage.getItem(ORDER_KEY) ?? "null");
     if (!saved || saved.ref !== ref || sessionStorage.getItem(`${ORDER_KEY}-${ref}`)) return;
     sessionStorage.setItem(`${ORDER_KEY}-${ref}`, "1");
-    send("Purchase", "CompletePayment", saved);
+    send("purchase", saved, ref);
   } catch {}
 }
