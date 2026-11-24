@@ -32,7 +32,7 @@ if (method() === 'GET') {
         }
         return implode(' | ', $parts);
     };
-    $headers = ['Référence', 'Date', 'Statut', 'Nom', 'Téléphone', 'Ville', 'Adresse', 'Produit', 'Métal', 'Taille', 'Quantité', 'Total (DH)', 'Autres champs', 'Note'];
+    $headers = ['Référence', 'Date', 'Statut', 'Nom', 'Téléphone', 'Ville', 'Adresse', 'Produit', 'Métal', 'Taille', 'Quantité', 'Total (DH)', 'Source', 'Campagne', 'Autres champs', 'Note'];
     $rows = [implode(';', array_map($cell, $headers))];
     foreach ($orders as $o) {
         $rows[] = implode(';', array_map($cell, [
@@ -48,6 +48,8 @@ if (method() === 'GET') {
             $o['size'] ?? '',
             $o['qty'] ?? '',
             $o['total'] ?? '',
+            $o['source'] ?? '',
+            $o['utmCampaign'] ?? '',
             $extra($o),
             $o['note'] ?? '',
         ]));

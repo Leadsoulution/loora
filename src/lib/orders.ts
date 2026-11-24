@@ -31,6 +31,11 @@ export type Order = {
   /** Statut de confirmation et de livraison tels qu'Orderly les a renvoyés (api/orderly-hook.php) */
   orderlyStatus?: string;
   orderlyDelivery?: string;
+  /** D'où vient le client : facebook, tiktok, snapchat, google, direct… (lib/attribution) */
+  source?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
   updatedAt?: string;
 };
 

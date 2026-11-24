@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { LogoHeader } from "@/components/LogoHeader";
 import type { Logo, ProductContent, Theme } from "@/lib/content-types";
+import { captureAttribution } from "@/lib/attribution";
 import { startPixels, trackViewContent } from "@/lib/pixel-events";
 import type { Pixels } from "@/lib/pixels";
 import { getProduct, type Product } from "@/lib/products";
@@ -29,6 +30,9 @@ export function ProductPage({ slug, initial }: { slug: string; initial?: Product
   useEffect(() => {
     if (title) document.title = title;
   }, [title]);
+
+  // D'où vient le client (publicité, site, direct) : envoyé avec sa commande
+  useEffect(() => captureAttribution(), []);
 
   // Pixels publicitaires : visite de la page puis consultation du produit
   const content = data?.content;

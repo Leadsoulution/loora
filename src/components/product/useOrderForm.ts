@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PHONE_FIELD_ID, type FormField, type ProductContent } from "@/lib/content-types";
 import { validateOrder, type OrderErrors, type OrderInput } from "@/lib/order";
 import { normalizePhone } from "@/lib/phone";
+import { getAttribution } from "@/lib/attribution";
 import { rememberOrder } from "@/lib/pixel-events";
 import type { Product } from "@/lib/products";
 
@@ -67,7 +68,7 @@ export function useOrderForm(product: Product, content: ProductContent, offerId:
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...order, website: honeypot }),
+        body: JSON.stringify({ ...order, website: honeypot, attribution: getAttribution() }),
       });
       const data = await res.json();
       if (!res.ok) {

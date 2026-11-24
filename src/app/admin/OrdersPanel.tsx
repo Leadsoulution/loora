@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/order-status";
 import { Media } from "@/components/Media";
+import { SOURCE_LABELS } from "@/lib/attribution";
 import type { Store } from "@/lib/content-types";
 import type { Order } from "@/lib/orders";
 import { getProduct } from "@/lib/products";
@@ -108,7 +109,7 @@ export function OrdersPanel({ onPending, store }: { onPending: (n: number) => vo
     return (orders ?? []).filter(
       (o) =>
         (filter === "all" || o.status === filter) &&
-        (!q || [o.ref, o.name, o.phone, o.city, o.product].some((v) => v?.toLowerCase().includes(q))),
+        (!q || [o.ref, o.name, o.phone, o.city, o.product, sourceInfo(o)?.label].some((v) => v?.toLowerCase().includes(q))),
     );
   }, [orders, filter, search]);
 
@@ -230,6 +231,27 @@ function Chip({
   );
 }
 
+/** Plateforme d'où vient la commande (null pour les commandes d'avant le suivi de la source) */
+function sourceInfo(o: Order) {
+  if (!o.source) return null;
+  return SOURCE_LABELS[o.source] ?? { label: o.source, color: "#8a7f70" };
+}
+
+function SourceBadge({ order }: { order: Order }) {
+  const info = sourceInfo(order);
+  if (!info) return null;
+  return (
+    <span
+      className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+      style={{ background: `${info.color}14`, color: info.color === "#010101" ? "#111" : info.color }}
+      title={order.utmCampaign ? `Campagne : ${order.utmCampaign}` : "Source de la commande"}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: info.color }} />
+      {info.label}
+    </span>
+  );
+}
+
 /** Photo principale du produit commandé (première photo de sa page) */
 function ProductThumb({ order, store, size }: { order: Order; store: Store; size: number }) {
   const product = getProduct(order.slug);
@@ -278,6 +300,7 @@ function OrderRow({
         <button type="button" onClick={onToggle} className="text-start text-[12px] text-muted lg:order-none">
           <span className="block">{dateFmt.format(new Date(o.createdAt))}</span>
           <span className="font-mono text-[11px]">{o.ref}</span>
+          <SourceBadge order={o} />
         </button>
 
         <button type="button" onClick={onToggle} className="col-span-2 min-w-0 text-start lg:col-span-1">
@@ -373,6 +396,18 @@ function OrderRow({
               {o.size ? `, taille ${o.size}` : ""}
             </p>
             <p className="font-medium">{o.total} DH à encaisser à la livraison</p>
+            {o.source && (
+              <p className="mt-2 text-[13px]">
+                <span className="text-muted">Source :</span> {sourceInfo(o)?.label}
+                {o.utmMedium && <span className="text-muted"> · {o.utmMedium}</span>}
+                {o.utmCampaign && (
+                  <span className="block text-[12px] text-muted">
+                    Campagne : {o.utmCampaign}
+                    {o.utmContent ? ` · Annonce : ${o.utmContent}` : ""}
+                  </span>
+                )}
+              </p>
+            )}
             {o.updatedAt && (
               <p className="mt-1 text-[12px] text-muted">Modifiée le {dateFmt.format(new Date(o.updatedAt))}</p>
             )}
