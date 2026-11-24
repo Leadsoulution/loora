@@ -127,6 +127,20 @@ $order += [
     'total' => $offer['price'] ?? 0,
 ];
 
+// Source de la commande (publicité, site d'origine, direct), repérée par la page produit
+$attribution = is_array($body['attribution'] ?? null) ? $body['attribution'] : [];
+$clean = function ($v, $max) {
+    return is_string($v) ? mb_substr(trim(preg_replace('/[^\w .:\/-]/u', '', $v)), 0, $max) : '';
+};
+$source = mb_strtolower($clean($attribution['source'] ?? '', 40));
+$order['source'] = $source !== '' ? $source : 'direct';
+foreach (['utmMedium' => 'medium', 'utmCampaign' => 'campaign', 'utmContent' => 'content'] as $key => $field) {
+    $value = $clean($attribution[$field] ?? '', 100);
+    if ($value !== '') {
+        $order[$key] = $value;
+    }
+}
+
 // 1. Sauvegarde (visible dans le dashboard, onglet Commandes)
 $line = encode_order($order) . "\n";
 with_orders_lock(function () use ($line) {

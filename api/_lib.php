@@ -359,6 +359,11 @@ function orderly_payload(array $o)
         'sku' => $sku,
         'quantity' => (int) ($o['qty'] ?? 1),
         'total' => $o['total'] ?? 0,
+        // Source : Orderly montre le logo de la plateforme (Facebook, TikTok…) dans sa colonne Plateforme
+        'utm_source' => (string) ($o['source'] ?? ''),
+        'utm_medium' => (string) ($o['utmMedium'] ?? ''),
+        'utm_campaign' => (string) ($o['utmCampaign'] ?? ''),
+        'utm_content' => (string) ($o['utmContent'] ?? ''),
     ];
 }
 
@@ -489,7 +494,13 @@ function woo_order(array $o)
                 !empty($o['size']) ? ['key' => 'Taille', 'value' => $o['size']] : null,
             ])),
         ]],
-        'meta_data' => [],
+        // Origine au format de WooCommerce 8.5+ (colonne « Origin »), que dops lit à l'import
+        'meta_data' => array_values(array_filter([
+            !empty($o['source']) ? ['key' => '_wc_order_attribution_utm_source', 'value' => $o['source']] : null,
+            !empty($o['utmMedium']) ? ['key' => '_wc_order_attribution_utm_medium', 'value' => $o['utmMedium']] : null,
+            !empty($o['utmCampaign']) ? ['key' => '_wc_order_attribution_utm_campaign', 'value' => $o['utmCampaign']] : null,
+            !empty($o['utmContent']) ? ['key' => '_wc_order_attribution_utm_content', 'value' => $o['utmContent']] : null,
+        ])),
     ];
 }
 
