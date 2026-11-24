@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { LogoHeader } from "@/components/LogoHeader";
 import type { Logo, ProductContent, Theme } from "@/lib/content-types";
 import { captureAttribution } from "@/lib/attribution";
-import { startPixels, trackViewContent } from "@/lib/pixel-events";
+import { setPixelProduct, startPixels, trackStartCheckout, trackViewContent } from "@/lib/pixel-events";
 import type { Pixels } from "@/lib/pixels";
 import { getProduct, type Product } from "@/lib/products";
 import { useStore } from "@/lib/use-store";
@@ -40,7 +40,16 @@ export function ProductPage({ slug, initial }: { slug: string; initial?: Product
   useEffect(() => {
     if (!content || !pixels) return;
     startPixels(pixels);
-    trackViewContent({ id: content.sku || slug, name: `${content.type} ${content.name}`, value: content.price, quantity: 1 });
+    const item = { id: content.sku || slug, name: `${content.type} ${content.name}`, value: content.price, quantity: 1 };
+    setPixelProduct(item);
+    trackViewContent(item);
+    // Début de commande : le client clique dans une case du formulaire (une fois par page)
+    const onFocus = (e: FocusEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el?.closest("form") && el.matches("input:not([name=website]), textarea")) trackStartCheckout();
+    };
+    document.addEventListener("focusin", onFocus);
+    return () => document.removeEventListener("focusin", onFocus);
   }, [content, pixels, slug]);
 
   if (!data?.content || !product) return <div className="min-h-screen flex-1 bg-white" />;

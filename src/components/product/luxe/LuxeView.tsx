@@ -3,6 +3,7 @@
 import { Amiri, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { useRef, useState } from "react";
 import { Media } from "@/components/Media";
+import { trackAddToCart } from "@/lib/pixel-events";
 import type { ProductContent, Section } from "@/lib/content-types";
 import { fieldMaxLength } from "@/lib/order";
 import type { Product } from "@/lib/products";
@@ -41,6 +42,7 @@ export function LuxeView({ product, content }: { product: Product; content: Prod
 
   const goToOrder: Go = (e) => {
     e?.preventDefault();
+    trackAddToCart();
     document.getElementById("lxOrder")?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 

@@ -8,7 +8,7 @@ import { PHONE_FIELD_ID, type FormField, type ProductContent, type Section } fro
 import { fieldMaxLength, validateOrder, type OrderErrors, type OrderInput } from "@/lib/order";
 import { normalizePhone } from "@/lib/phone";
 import { getAttribution } from "@/lib/attribution";
-import { rememberOrder } from "@/lib/pixel-events";
+import { rememberOrder, trackAddToCart } from "@/lib/pixel-events";
 import type { Product } from "@/lib/products";
 import "./mood.css";
 
@@ -62,6 +62,7 @@ export function MoodView({ product, content }: { product: Product; content: Prod
 
   const goToOrder: Go = (e) => {
     e?.preventDefault();
+    trackAddToCart();
     document.getElementById("mdOrder")?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
@@ -343,7 +344,7 @@ function MoodOrderForm({
         name: `${content.type} ${content.name}`,
         value: offer.price,
         quantity: offer.qty,
-      });
+      }, phone ?? "");
       router.push(`/merci/?ref=${encodeURIComponent(data.ref)}`);
     } catch {
       setErrors({ form: "وقع خطأ في الاتصال، المرجو المحاولة مرة أخرى." });

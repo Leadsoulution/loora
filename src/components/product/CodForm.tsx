@@ -83,7 +83,7 @@ export function CodForm({
         name: `${content.type} ${content.name}`,
         value: offer.price,
         quantity: offer.qty,
-      });
+      }, values[PHONE_FIELD_ID] ?? "");
       router.push(`/merci/?ref=${encodeURIComponent(data.ref)}`);
     } catch {
       setErrors({ form: "تعذّر الاتصال. تحقّق من الإنترنت وحاول مرة أخرى." });

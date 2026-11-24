@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Media } from "@/components/Media";
+import { trackAddToCart } from "@/lib/pixel-events";
 import { buttonHref, type ProductContent, type Section, type Theme } from "@/lib/content-types";
 import { formatDh, type Product } from "@/lib/products";
 import { CodForm } from "./CodForm";
@@ -66,7 +67,10 @@ export function ProductView({
     return () => window.removeEventListener("load", ready);
   }, []);
 
-  const goToOrder = () => document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const goToOrder = () => {
+    trackAddToCart();
+    document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const step = (dir: 1 | -1) => setView((current + dir + images.length) % images.length);
 
   return (

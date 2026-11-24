@@ -8,7 +8,7 @@ import { PHONE_FIELD_ID, type FormField, type ProductContent, type Section } fro
 import { fieldMaxLength, validateOrder, type OrderErrors, type OrderInput } from "@/lib/order";
 import { normalizePhone } from "@/lib/phone";
 import { getAttribution } from "@/lib/attribution";
-import { rememberOrder } from "@/lib/pixel-events";
+import { rememberOrder, trackAddToCart } from "@/lib/pixel-events";
 import type { Product } from "@/lib/products";
 import "./rose.css";
 
@@ -54,6 +54,7 @@ export function RoseView({ product, content }: { product: Product; content: Prod
 
   const goToOrder = (e?: React.MouseEvent) => {
     e?.preventDefault();
+    trackAddToCart();
     document.getElementById("rfOrder")?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
@@ -234,7 +235,7 @@ function RoseOrderForm({
         name: `${content.type} ${content.name}`,
         value: offer.price,
         quantity: offer.qty,
-      });
+      }, phone ?? "");
       router.push(`/merci/?ref=${encodeURIComponent(data.ref)}`);
     } catch {
       setErrors({ form: "وقع خطأ في الاتصال، المرجو المحاولة مرة أخرى." });

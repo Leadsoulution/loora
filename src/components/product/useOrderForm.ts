@@ -82,7 +82,7 @@ export function useOrderForm(product: Product, content: ProductContent, offerId:
         name: `${content.type} ${content.name}`,
         value: offer.price,
         quantity: offer.qty,
-      });
+      }, phone ?? "");
       router.push(`/merci/?ref=${encodeURIComponent(data.ref)}`);
     } catch {
       setErrors({ form: "وقع خطأ في الاتصال، المرجو المحاولة مرة أخرى." });

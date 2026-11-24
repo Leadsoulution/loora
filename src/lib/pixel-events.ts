@@ -26,6 +26,8 @@ export type PixelProduct = {
 let started = false;
 /** Étiquettes de conversion Google Ads (AW-…/xxx) : l'achat leur est envoyé en plus */
 let googleConversions: string[] = [];
+/** Pixels Snapchat démarrés : ré-initialisés avec le téléphone du client au moment de l'achat */
+let snapIds: string[] = [];
 
 function addScript(src: string) {
   const s = document.createElement("script");
@@ -103,6 +105,7 @@ export function startPixels(pixels: Pixels | undefined) {
   if (pixels.snap.length > 0) {
     snapQueue();
     // Pas d'e-mail : le formulaire de commande n'en demande pas
+    snapIds = pixels.snap;
     for (const id of pixels.snap) window.snaptr("init", id);
     window.snaptr("track", "PAGE_VIEW");
     whenIdle(() => addScript("https://sc-static.net/scevent.min.js"));
@@ -132,13 +135,31 @@ function snapQueue() {
   window.snaptr = a;
 }
 
-type PixelEvent = "view" | "purchase";
+type PixelEvent = "view" | "cart" | "checkout" | "purchase";
+
+/** Nom de l'événement chez chaque plateforme */
+const NAMES: Record<PixelEvent, { meta: string; tiktok: string; snap: string; google: string }> = {
+  view: { meta: "ViewContent", tiktok: "ViewContent", snap: "VIEW_CONTENT", google: "view_item" },
+  cart: { meta: "AddToCart", tiktok: "AddToCart", snap: "ADD_CART", google: "add_to_cart" },
+  checkout: { meta: "InitiateCheckout", tiktok: "InitiateCheckout", snap: "START_CHECKOUT", google: "begin_checkout" },
+  purchase: { meta: "Purchase", tiktok: "CompletePayment", snap: "PURCHASE", google: "purchase" },
+};
+
+/** 0612345678 / +212612345678 / 00212612345678 → 212612345678 (format demandé par Snapchat) */
+export function intlPhone(phone: string) {
+  let p = String(phone || "").replace(/\D/g, "");
+  if (p.startsWith("00")) p = p.slice(2);
+  if (p.startsWith("0")) p = `212${p.slice(1)}`;
+  if (p.length === 9) p = `212${p}`;
+  return /^212[5-7]\d{8}$/.test(p) ? p : "";
+}
 
 /** Événement envoyé à tous les pixels démarrés (ref = numéro de commande pour un achat) */
-function send(event: PixelEvent, p: PixelProduct, ref?: string) {
+function send(event: PixelEvent, p: PixelProduct, ref?: string, phone?: string) {
+  const name = NAMES[event];
   const purchase = event === "purchase";
   if (window.fbq) {
-    window.fbq("track", purchase ? "Purchase" : "ViewContent", {
+    window.fbq("track", name.meta, {
       content_ids: [p.id],
       content_name: p.name,
       content_type: "product",
@@ -148,7 +169,7 @@ function send(event: PixelEvent, p: PixelProduct, ref?: string) {
     });
   }
   if (window.ttq) {
-    window.ttq.track(purchase ? "CompletePayment" : "ViewContent", {
+    window.ttq.track(name.tiktok, {
       contents: [{ content_id: p.id, content_name: p.name, quantity: p.quantity }],
       content_type: "product",
       value: p.value,
@@ -156,18 +177,22 @@ function send(event: PixelEvent, p: PixelProduct, ref?: string) {
     });
   }
   if (window.snaptr) {
-    window.snaptr("track", purchase ? "PURCHASE" : "VIEW_CONTENT", {
+    // Achat : le pixel est ré-initialisé avec le téléphone du client (Snapchat le chiffre lui-même),
+    // ce qui améliore la correspondance des commandes avec les comptes Snapchat
+    const user = phone ? intlPhone(phone) : "";
+    if (purchase && user) for (const id of snapIds) window.snaptr("init", id, { user_phone_number: user });
+    window.snaptr("track", name.snap, {
       item_ids: [p.id],
       item_category: p.name,
       number_items: p.quantity,
       price: p.value,
       currency: "MAD",
-      ...(ref ? { transaction_id: ref } : {}),
+      ...(ref ? { transaction_id: ref, client_dedup_id: ref } : {}),
     });
   }
   if (window.gtag) {
     const items = [{ item_id: p.id, item_name: p.name, quantity: p.quantity, price: Math.round(p.value / p.quantity) }];
-    window.gtag("event", purchase ? "purchase" : "view_item", {
+    window.gtag("event", name.google, {
       currency: "MAD",
       value: p.value,
       items,
@@ -184,14 +209,34 @@ function send(event: PixelEvent, p: PixelProduct, ref?: string) {
 /** Visite d'une page produit */
 export const trackViewContent = (p: PixelProduct) => send("view", p);
 
+/** Produit de la page affichée, pour l'ajout au panier et le début de commande */
+let pageProduct: PixelProduct | null = null;
+const sentOnce = new Set<PixelEvent>();
+
+export function setPixelProduct(p: PixelProduct) {
+  if (pageProduct?.id !== p.id) sentOnce.clear();
+  pageProduct = p;
+}
+
+function once(event: PixelEvent) {
+  if (!pageProduct || sentOnce.has(event)) return;
+  sentOnce.add(event);
+  send(event, pageProduct);
+}
+
+/** Clic sur « اطلب الآن » (bouton vers le formulaire, barre collante) : une fois par page */
+export const trackAddToCart = () => once("cart");
+/** Le client commence à remplir le formulaire : une fois par page */
+export const trackStartCheckout = () => once("checkout");
+
 // ---------------------------------------------------------------- Commande → page merci
 
 const ORDER_KEY = "loora-last-order";
 
 /** Garde la commande réussie le temps d'arriver sur la page merci, qui envoie l'achat */
-export function rememberOrder(ref: string, p: PixelProduct) {
+export function rememberOrder(ref: string, p: PixelProduct, phone = "") {
   try {
-    sessionStorage.setItem(ORDER_KEY, JSON.stringify({ ref, ...p }));
+    sessionStorage.setItem(ORDER_KEY, JSON.stringify({ ref, ...p, phone }));
   } catch {}
 }
 
@@ -201,6 +246,9 @@ export function trackPurchase(ref: string) {
     const saved = JSON.parse(sessionStorage.getItem(ORDER_KEY) ?? "null");
     if (!saved || saved.ref !== ref || sessionStorage.getItem(`${ORDER_KEY}-${ref}`)) return;
     sessionStorage.setItem(`${ORDER_KEY}-${ref}`, "1");
-    send("purchase", saved, ref);
+    const { phone, ...product } = saved;
+    send("purchase", product, ref, phone);
+    // Le téléphone ne reste pas dans le navigateur une fois l'achat envoyé
+    sessionStorage.setItem(ORDER_KEY, JSON.stringify({ ...product, ref }));
   } catch {}
 }
