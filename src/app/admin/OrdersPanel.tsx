@@ -87,6 +87,26 @@ export function OrdersPanel({ onPending, store }: { onPending: (n: number) => vo
     }
   }
 
+  /** Renvoi manuel à Orderly : Orderly n'ayant pas de protection contre les doublons, on confirme d'abord */
+  async function resendOrderly(o: Order) {
+    const warn = o.orderlyStatus
+      ? `Orderly a déjà cette commande (statut « ${o.orderlyStatus} »). La renvoyer créera un doublon. Continuer ?`
+      : `Renvoyer la commande ${o.ref} de ${o.name} à Orderly ?\n\nÀ faire seulement si elle n'apparaît pas dans Orderly : un renvoi crée une nouvelle commande.`;
+    if (!confirm(warn)) return;
+    const res = await fetch("/api/admin/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ref: o.ref, action: "resendOrderly" }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data) {
+      setError(data?.error ?? "Le renvoi à Orderly a échoué.");
+    } else {
+      setOrders((list) => list?.map((x) => (x.ref === o.ref ? data : x)) ?? null);
+      setError(data.orderlySync?.state === "sent" ? "" : data.orderlySync?.message ?? "");
+    }
+  }
+
   async function remove(o: Order) {
     if (!confirm(`Supprimer définitivement la commande ${o.ref} de ${o.name} ?`)) return;
     setOrders((list) => list?.filter((x) => x.ref !== o.ref) ?? null);
@@ -197,6 +217,7 @@ export function OrdersPanel({ onPending, store }: { onPending: (n: number) => vo
                 onStatus={(status) => patch(o.ref, { status })}
                 onNote={(note) => patch(o.ref, { note })}
                 onDelete={() => remove(o)}
+                onResend={() => resendOrderly(o)}
               />
             ))}
           </ul>
@@ -252,6 +273,21 @@ function SourceBadge({ order }: { order: Order }) {
   );
 }
 
+const timeFmt = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Casablanca" });
+
+/** Commande pas encore reçue par Orderly : en attente d'un nouvel essai, ou abandonnée (à traiter à la main) */
+function orderlyProblem(o: Order) {
+  const s = o.orderlySync;
+  if (!s || s.state === "sent") return null;
+  if (s.state === "pending") {
+    return {
+      color: "#b26a00",
+      text: `Non transmise à Orderly · nouvel essai à ${s.nextAt ? timeFmt.format(new Date(s.nextAt)) : "—"} (${s.attempts}/6)`,
+    };
+  }
+  return { color: "#a8322a", text: s.state === "rejected" ? "Non transmise : refusée par Orderly" : "Non transmise à Orderly (6 essais)" };
+}
+
 /** Photo principale du produit commandé (première photo de sa page) */
 function ProductThumb({ order, store, size }: { order: Order; store: Store; size: number }) {
   const product = getProduct(order.slug);
@@ -282,6 +318,7 @@ function OrderRow({
   onStatus,
   onNote,
   onDelete,
+  onResend,
 }: {
   order: Order;
   store: Store;
@@ -290,7 +327,9 @@ function OrderRow({
   onStatus: (s: OrderStatus) => void;
   onNote: (note: string) => void;
   onDelete: () => void;
+  onResend: () => void;
 }) {
+  const problem = orderlyProblem(o);
   const status = STATUS[o.status];
   const wa = `https://wa.me/${whatsappNumber(o.phone)}?text=${encodeURIComponent(confirmMessage(o))}`;
 
@@ -353,6 +392,11 @@ function OrderRow({
               </option>
             ))}
           </select>
+          {problem && !o.orderlyStatus && (
+            <p className="mt-1 text-[11px] font-medium" style={{ color: problem.color }} title={o.orderlySync?.message}>
+              ⚠ {problem.text}
+            </p>
+          )}
           {(o.orderlyStatus || o.orderlyDelivery) && (
             <p className="mt-1 truncate text-[11px] text-muted" title="Statut dans Orderly">
               Orderly : {[o.orderlyStatus, o.orderlyDelivery].filter(Boolean).join(" · ")}
@@ -421,6 +465,25 @@ function OrderRow({
               placeholder="Ex. : rappeler à 18h, client absent…"
               className="mt-1 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-[14px] outline-none focus:border-gold"
             />
+            <div className="mt-3 rounded-lg border border-ink/10 bg-white px-3 py-2 text-[12px]">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted">Envoi à Orderly</p>
+              {o.orderlySync ? (
+                <p className="mt-0.5" style={{ color: problem?.color }}>
+                  {o.orderlySync.state === "sent" ? "✓ Reçue par Orderly" : problem?.text}
+                  <span className="block text-muted">
+                    {o.orderlySync.message}
+                    {o.orderlySync.lastAt ? ` · ${dateFmt.format(new Date(o.orderlySync.lastAt))}` : ""}
+                  </span>
+                </p>
+              ) : (
+                <p className="mt-0.5 text-muted">Pas de suivi pour cette commande (passée avant la reprise automatique).</p>
+              )}
+              {o.orderlySync?.state !== "sent" && (
+                <Button className="mt-2" onClick={onResend}>
+                  Renvoyer à Orderly
+                </Button>
+              )}
+            </div>
             <div className="mt-2 flex justify-end">
               <Button variant="danger" onClick={onDelete}>
                 Supprimer la commande

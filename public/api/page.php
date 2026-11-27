@@ -14,6 +14,9 @@ if (!in_array($slug, LOORA_PRODUCTS, true)) {
     exit;
 }
 
+// Une fois la page envoyée au visiteur : renvoi des commandes en attente vers Orderly
+register_shutdown_function('retry_orderly_after_response');
+
 $live = load_store_json();
 $built = @file_get_contents(__DIR__ . '/built.json');
 $prerendered = "$site/produit/$slug/index.html";

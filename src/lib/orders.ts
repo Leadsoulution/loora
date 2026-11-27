@@ -36,6 +36,15 @@ export type Order = {
   utmMedium?: string;
   utmCampaign?: string;
   utmContent?: string;
+  /** Envoi à Orderly (api/_lib.php) : sent = reçue, pending = nouvel essai prévu, failed / rejected = non transmise */
+  orderlySync?: {
+    state: "sent" | "pending" | "failed" | "rejected";
+    attempts: number;
+    lastAt?: string;
+    nextAt?: string;
+    message?: string;
+    reference?: string;
+  };
   updatedAt?: string;
 };
 

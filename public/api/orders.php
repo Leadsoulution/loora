@@ -152,3 +152,5 @@ with_orders_lock(function () use ($line) {
 // 2. Réponse immédiate au client, puis on prévient les applications reliées (dops, webhook)
 respond_early(['ref' => $ref, 'total' => $order['total']]);
 notify_integrations($order);
+// Au passage : les commandes d'avant qui attendent un nouvel essai vers Orderly
+orderly_retry_due();

@@ -1,0 +1,22 @@
+# Toutes les 10 minutes : renvoie à Orderly les commandes dont l'envoi a échoué et dont le
+# nouvel essai est arrivé à échéance (1 min, 5 min, 15 min, 1 h, 6 h après chaque échec).
+# Les visites du site déclenchent aussi ces renvois ; cette tâche couvre les heures sans visiteurs.
+name: Renvoyer les commandes à Orderly
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: orderly-retry
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: curl -fsS --max-time 120 -A "LOORA-retry" https://loora.ma/api/orderly-retry

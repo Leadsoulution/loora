@@ -390,12 +390,138 @@ function notify_orderly(array $payload)
     return [$ok, $message];
 }
 
+/* ------------------------------------------------------------ Orderly : suivi et reprise des envois */
+
+// Après un échec, nouvel essai 1 min, 5 min, 15 min, 1 h puis 6 h plus tard ; ensuite « non transmise »
+const ORDERLY_RETRY_DELAYS = [60, 300, 900, 3600, 21600];
+
+/**
+ * Envoie une commande à Orderly et dit quoi faire ensuite :
+ *  - 'sent'     : Orderly l'a enregistrée (réponse 2xx avec ok)
+ *  - 'rejected' : réponse 400, la commande est refusée telle quelle, inutile de réessayer
+ *  - 'retry'    : Orderly injoignable, délai dépassé, erreur 401/403/5xx… on réessaiera
+ */
+function send_to_orderly(array $order)
+{
+    $url = load_settings()['orderly']['url'];
+    list($ok, $status, $body) = post_json($url, orderly_payload($order));
+    $reply = json_decode($body, true);
+    $reference = '';
+    if ($ok && is_array($reply) && !empty($reply['ok'])) {
+        $state = 'sent';
+        $reference = is_string($reply['reference'] ?? null) ? $reply['reference'] : '';
+        $message = 'Orderly a enregistré la commande' . ($reference !== '' ? " ($reference)." : '.');
+    } else {
+        $state = $status === 400 ? 'rejected' : 'retry';
+        $message = is_array($reply) && !empty($reply['error'])
+            ? "Orderly ($status) : " . $reply['error']
+            : ($status ? "Orderly a répondu avec l'erreur $status." : 'Orderly injoignable : ' . mb_substr($body, 0, 200));
+    }
+    $settings = load_settings();
+    $settings['orderly'][$state === 'sent' ? 'lastSuccess' : 'lastError'] = iso_now() . " — $message";
+    save_settings($settings);
+    return [$state, $message, $reference];
+}
+
+/** Note le résultat d'un envoi sur la commande (onglet Commandes) et programme le prochain essai */
+function record_orderly_attempt($ref, $state, $message, $reference = '')
+{
+    return with_orders_lock(function () use ($ref, $state, $message, $reference) {
+        $orders = read_orders();
+        foreach ($orders as $i => $o) {
+            if (($o['ref'] ?? null) !== $ref) {
+                continue;
+            }
+            $sync = is_array($o['orderlySync'] ?? null) ? $o['orderlySync'] : [];
+            $sync['attempts'] = (int) ($sync['attempts'] ?? 0) + 1;
+            $sync['lastAt'] = iso_now();
+            $sync['message'] = $message;
+            unset($sync['nextAt']);
+            if ($state === 'sent') {
+                $sync['state'] = 'sent';
+                if ($reference !== '') {
+                    $sync['reference'] = $reference;
+                }
+            } elseif ($state === 'rejected') {
+                $sync['state'] = 'rejected';
+            } elseif ($sync['attempts'] <= count(ORDERLY_RETRY_DELAYS)) {
+                $sync['state'] = 'pending';
+                $sync['nextAt'] = gmdate('Y-m-d\TH:i:s\Z', time() + ORDERLY_RETRY_DELAYS[$sync['attempts'] - 1]);
+            } else {
+                $sync['state'] = 'failed';
+            }
+            $orders[$i]['orderlySync'] = $sync;
+            write_orders($orders);
+            return $orders[$i];
+        }
+        return null;
+    });
+}
+
+/** Envoie une commande à Orderly et garde la trace du résultat */
+function deliver_to_orderly(array $order)
+{
+    list($state, $message, $reference) = send_to_orderly($order);
+    return record_orderly_attempt((string) ($order['ref'] ?? ''), $state, $message, $reference);
+}
+
+/**
+ * Renvoie les commandes dont l'essai suivant est arrivé à échéance.
+ * Appelé après la réponse aux visiteurs (pages produit, commandes) et par une tâche planifiée.
+ * Un seul passage à la fois, au plus toutes les 30 secondes.
+ */
+function orderly_retry_due($max = 5)
+{
+    if (load_settings()['orderly']['url'] === '') {
+        return 0;
+    }
+    $stamp = data_dir() . '/orderly-retry.last';
+    if (is_file($stamp) && time() - (int) @filemtime($stamp) < 30) {
+        return 0;
+    }
+    $lock = @fopen(data_dir() . '/orderly-retry.lock', 'c');
+    if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) {
+        return 0;
+    }
+    try {
+        @touch($stamp);
+        $now = gmdate('Y-m-d\TH:i:s\Z');
+        $done = 0;
+        foreach (read_orders() as $o) {
+            $sync = $o['orderlySync'] ?? null;
+            if (!is_array($sync) || ($sync['state'] ?? '') !== 'pending' || (string) ($sync['nextAt'] ?? '') > $now) {
+                continue;
+            }
+            deliver_to_orderly($o);
+            if (++$done >= $max) {
+                break;
+            }
+        }
+        return $done;
+    } finally {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+    }
+}
+
+/** Termine la réponse au visiteur, puis lance les renvois en attente (le visiteur n'attend pas) */
+function retry_orderly_after_response()
+{
+    if (function_exists('litespeed_finish_request')) {
+        litespeed_finish_request();
+    } elseif (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+    ignore_user_abort(true);
+    orderly_retry_due();
+}
+
 /** Prévient les applications reliées d'une nouvelle commande */
 function notify_integrations(array $order)
 {
     $settings = load_settings();
     if ($settings['orderly']['url'] !== '') {
-        notify_orderly(orderly_payload($order));
+        deliver_to_orderly($order);
     }
     if ($settings['dops']['enabled'] && $settings['dops']['webhook'] !== '') {
         notify_dops($order);
