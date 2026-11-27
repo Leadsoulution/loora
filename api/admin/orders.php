@@ -65,6 +65,24 @@ if (method() === 'GET') {
 $body = read_json_body() ?? [];
 $ref = str_val($body['ref'] ?? '', 100);
 
+// Renvoi manuel d'une commande à Orderly (bouton « Renvoyer à Orderly »)
+if (method() === 'PATCH' && ($body['action'] ?? '') === 'resendOrderly') {
+    if (load_settings()['orderly']['url'] === '') {
+        json_out(['error' => "Orderly n'est pas relié (page Connexions)."], 400);
+    }
+    $found = null;
+    foreach (read_orders() as $o) {
+        if (($o['ref'] ?? null) === $ref) {
+            $found = $o;
+            break;
+        }
+    }
+    if ($found === null) {
+        json_out(['error' => 'Commande introuvable.'], 404);
+    }
+    json_out(deliver_to_orderly($found));
+}
+
 if (method() === 'PATCH') {
     $order = with_orders_lock(function () use ($ref, $body) {
         $orders = read_orders();
